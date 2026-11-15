@@ -2945,7 +2945,7 @@ select {
     padding-block: 24px 32px;
   }
   .chat-page .community-chat {
-    height: clamp(320px, calc(100dvh - 340px), 640px);
+    height: clamp(480px, 78svh, 900px);
   }
   .chat-page .chat-heading {
     padding-inline: 16px;
