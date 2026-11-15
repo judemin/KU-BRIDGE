@@ -116,7 +116,10 @@ test("board, editor and chat use independent routes, flags and subscription life
       return () => {};
     },
     watchComments(uid, room, id, next) {
-      next([]);
+      next([
+        { ...row, id: "comment-other", body: "A reply from the post author" },
+        { ...row, id: "comment-own", authorId: "alice_ku", nationality: "KR", body: "My reply" },
+      ]);
       return () => {};
     },
   };
@@ -200,6 +203,19 @@ test("board, editor and chat use independent routes, flags and subscription life
     await act(async () => document.querySelector(".post-title").click());
     await flush();
     assert.ok(document.querySelector(".post-detail"));
+    assert.equal(document.querySelector(".post-detail-header h2").textContent, row.title);
+    assert.equal(document.querySelector(".post-detail-body > .content-body").textContent, row.body);
+    assert.equal(document.querySelectorAll(".comment-section .comment").length, 2);
+    assert.equal(document.querySelector(".comment .board-avatar").textContent, "B");
+    assert.equal(document.querySelector(".comment-compose-panel .content-author b").textContent, "alice_ku");
+    assert.equal(document.querySelector(".comment-compose-panel time"), null);
+    assert.equal(document.querySelector(".comment-compose-panel img.country-flag").getAttribute("src"), "/flags/kr.svg");
+    assert.ok(document.querySelector('.comment-compose-panel textarea[name="commentBody"]'));
+    const ownComment = document.querySelectorAll(".comment")[1];
+    await act(async () => ownComment.querySelector(".content-tools button").click());
+    assert.equal(ownComment.querySelector(".community-composer textarea").value, "My reply");
+    await act(async () => ownComment.querySelector('.community-composer button[type="button"]').click());
+    assert.equal(ownComment.querySelector(".content-body").textContent, "My reply");
     assert.equal(starts, 0);
     assert.equal(document.querySelector(".community-chat"), null);
     await act(async () =>

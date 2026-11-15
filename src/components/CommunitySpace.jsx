@@ -48,6 +48,16 @@ function Author({ item, lang, tx, showFlag = true, showTime = true }) {
     </div>
   );
 }
+function BoardAuthor({ item, lang, tx, showTime = true }) {
+  return (
+    <div className="board-author">
+      <span className="board-avatar" aria-hidden="true">
+        {(item.authorId || "?").slice(0, 1).toUpperCase()}
+      </span>
+      <Author item={item} lang={lang} tx={tx} showTime={showTime} />
+    </div>
+  );
+}
 function Composer({
   kind,
   room,
@@ -214,14 +224,16 @@ function Comments({ room, post, service, blocked, canWrite }) {
       (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0),
   );
   return (
-    <section className="comment-section">
-      <h3>{tx("comments")}</h3>
+    <section className="comment-section" aria-labelledby="post-comments-heading">
+      <div className="comments-heading">
+        <h3 id="post-comments-heading">{tx("comments")}</h3>
+      </div>
       {error && <p role="alert">{tx(error)}</p>}
       {all
         .filter((item) => !blocked.includes(item.authorId))
         .map((item) => (
           <article className="comment" key={item.id}>
-            <Author item={item} lang={lang} tx={tx} />
+            <BoardAuthor item={item} lang={lang} tx={tx} />
             {editing === item.id ? (
               <Composer
                 kind="comment"
@@ -281,13 +293,21 @@ function Comments({ room, post, service, blocked, canWrite }) {
         </button>
       )}
       {canWrite && post.status === "visible" && (
-        <Composer
-          kind="comment"
-          room={room}
-          parent={post.id}
-          service={service}
-        />
-      )}{" "}
+        <div className="comment-compose-panel">
+          <BoardAuthor
+            item={{ authorId: auth.profile?.userId, nationality: auth.profile?.nationality }}
+            lang={lang}
+            tx={tx}
+            showTime={false}
+          />
+          <Composer
+            kind="comment"
+            room={room}
+            parent={post.id}
+            service={service}
+          />
+        </div>
+      )}
     </section>
   );
 }
@@ -340,38 +360,50 @@ function PostDetail({ room, id, service, blocked, canWrite, onBack }) {
     );
   return (
     <article className="post-detail">
-      <button className="auth-text-link" onClick={onBack}>
+      <button className="post-back-button" onClick={onBack}>
+        <span aria-hidden="true">←</span>
         {tx("backToPosts")}
       </button>
-      <h2>{post.status === "deleted" ? tx("deletedPost") : post.title}</h2>
-      <Author item={post} lang={lang} tx={tx} />
-      {editing ? (
-        <Composer
-          kind="post"
-          room={room}
-          service={service}
-          initial={post}
-          onDone={() => setEditing(false)}
-          onCancel={() => setEditing(false)}
-        />
-      ) : (
-        <p className="content-body">{post.body}</p>
-      )}
-      {post.status !== "deleted" && (
-        <ContentTools
-          item={{
-            ...post,
-            roomId: room,
-            kind: "post",
-            parentId: "",
-            contentId: id,
-          }}
-          own={auth.profile?.userId === post.authorId}
-          service={service}
-          blocked={false}
-          onEdit={canWrite ? () => setEditing(true) : undefined}
-        />
-      )}
+      <div className="post-content-card">
+        <header className="post-detail-header">
+          <span className="post-category">
+            {tx(`category_${post.category || "general"}`)}
+          </span>
+          <h2>{post.status === "deleted" ? tx("deletedPost") : post.title}</h2>
+          <BoardAuthor item={post} lang={lang} tx={tx} />
+        </header>
+        <div className="post-detail-body">
+          {editing ? (
+            <Composer
+              kind="post"
+              room={room}
+              service={service}
+              initial={post}
+              onDone={() => setEditing(false)}
+              onCancel={() => setEditing(false)}
+            />
+          ) : (
+            <p className="content-body">{post.body}</p>
+          )}
+        </div>
+        {post.status !== "deleted" && (
+          <footer className="post-detail-actions">
+            <ContentTools
+              item={{
+                ...post,
+                roomId: room,
+                kind: "post",
+                parentId: "",
+                contentId: id,
+              }}
+              own={auth.profile?.userId === post.authorId}
+              service={service}
+              blocked={false}
+              onEdit={canWrite ? () => setEditing(true) : undefined}
+            />
+          </footer>
+        )}
+      </div>
       <Comments
         key={id}
         room={room}
