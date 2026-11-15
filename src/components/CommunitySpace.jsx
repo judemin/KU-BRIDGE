@@ -21,7 +21,7 @@ function useVisible() {
   }, []);
   return visible;
 }
-function Author({ item, lang, tx, showFlag = true }) {
+function Author({ item, lang, tx, showFlag = true, showTime = true }) {
   return (
     <div className="content-author">
       <b>{item.authorId || tx("deletedAuthor")}</b>
@@ -40,9 +40,11 @@ function Author({ item, lang, tx, showFlag = true }) {
           )}
         </span>
       )}
-      <time>
-        {item.createdAt?.toDate?.().toLocaleString(lang) || tx("justNow")}
-      </time>
+      {showTime && (
+        <time>
+          {item.createdAt?.toDate?.().toLocaleString(lang) || tx("justNow")}
+        </time>
+      )}
     </div>
   );
 }
@@ -570,13 +572,11 @@ function ChatPanel({ room, service, blocked, canWrite, enabled }) {
     [busy, setBusy] = useState(false),
     [error, setError] = useState(null),
     [more, setMore] = useState(false),
-    [retry, setRetry] = useState(0),
-    [collapsed, setCollapsed] = useState(false);
+    [retry, setRetry] = useState(0);
   const visible = useVisible(),
     cursor = useRef(null),
     job = useRef(null),
     lock = useRef(false),
-    bottom = useRef(null),
     nearBottom = useRef(true),
     scroll = useRef(null);
   useEffect(() => {
@@ -602,8 +602,8 @@ function ChatPanel({ room, service, blocked, canWrite, enabled }) {
     };
   }, [room, auth.user.uid, service, visible, enabled, retry]);
   useEffect(() => {
-    if (nearBottom.current)
-      bottom.current?.scrollIntoView?.({ block: "nearest" });
+    if (nearBottom.current && scroll.current)
+      scroll.current.scrollTop = scroll.current.scrollHeight;
   }, [live[0]?.id]);
   const items = [
     ...new Map([...history, ...live].map((item) => [item.id, item])).values(),
@@ -615,173 +615,166 @@ function ChatPanel({ room, service, blocked, canWrite, enabled }) {
     );
   return (
     <aside
-      className={"community-chat " + (collapsed ? "collapsed" : "")}
+      className="community-chat"
       aria-label={tx("liveChat")}
     >
       <div className="chat-heading">
         <h2>{tx(`room_${room}`)}</h2>
-        <button
-          aria-expanded={!collapsed}
-          className="chat-collapse"
-          onClick={() => setCollapsed((value) => !value)}
-        >
-          {tx(collapsed ? "expandChat" : "collapseChat")}
-        </button>
       </div>
       <p className="chat-room-name">
         {tx(`room_${room}`)} / {tx("chatRetention")}
       </p>
-      {!collapsed && (
-        <>
-          <div
-            className="chat-scroll"
-            ref={scroll}
-            onScroll={() => {
-              const node = scroll.current;
-              nearBottom.current =
-                node.scrollHeight - node.scrollTop - node.clientHeight < 80;
-            }}
-          >
-            {more && history.length < 150 && (
-              <button
-                className="auth-text-link"
-                disabled={busy}
-                onClick={async () => {
-                  setBusy(true);
-                  try {
-                    const result = await service.olderMessages(
-                      auth.user.uid,
-                      room,
-                      cursor.current || live.at(-1)?.cursor,
-                    );
-                    setHistory((old) =>
-                      [
-                        ...new Map(
-                          [...old, ...result.items].map((item) => [
-                            item.id,
-                            item,
-                          ]),
-                        ).values(),
-                      ].slice(-150),
-                    );
-                    cursor.current = result.cursor;
-                    setMore(result.hasMore);
-                  } catch (err) {
-                    setError(communityErrorKey(err));
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                {tx("olderMessages")}
-              </button>
-            )}
-            {items.map((item) => (
-              <article
-                className={
-                  "chat-message " +
-                  (item.authorId === auth.profile?.userId ? "mine" : "")
-                }
-                key={item.id}
-              >
-                <Author item={item} lang={lang} tx={tx} showFlag />
-                <p className="content-body">{item.body}</p>
-                <ContentTools
-                  item={{
-                    ...item,
-                    roomId: room,
-                    kind: "message",
-                    parentId: "",
-                    contentId: item.id,
-                  }}
-                  own={item.authorId === auth.profile?.userId}
-                  service={service}
-                  blocked={false}
-                  onChange={
-                    item.authorId === auth.profile?.userId
-                      ? () =>
-                          setHistory((old) =>
-                            old.filter((row) => row.id !== item.id),
-                          )
-                      : undefined
-                  }
-                />
-              </article>
-            ))}
-            {items.length === 0 && (
-              <p className="community-empty">{tx("noMessages")}</p>
-            )}
-            <div ref={bottom} />
-          </div>
-          {!enabled && <p role="status">{tx("chatPaused")}</p>}
-          {!visible && <p role="status">{tx("chatInactive")}</p>}
-          {error && (
-            <div className="community-error" role="alert">
-              <p>{tx(error)}</p>
-              <button
-                className="auth-text-link"
-                onClick={() => setRetry((value) => value + 1)}
-              >
-                {tx("retry")}
-              </button>
-            </div>
-          )}
-          <form
-            className="chat-compose"
-            onSubmit={async (event) => {
-              event.preventDefault();
-              if (lock.current || !canWrite || !enabled || !body.trim()) return;
-              lock.current = true;
+      <div
+        className="chat-scroll"
+        ref={scroll}
+        onScroll={() => {
+          const node = scroll.current;
+          nearBottom.current =
+            node.scrollHeight - node.scrollTop - node.clientHeight < 80;
+        }}
+      >
+        {more && history.length < 150 && (
+          <button
+            className="auth-text-link"
+            disabled={busy}
+            onClick={async () => {
               setBusy(true);
-              setError(null);
               try {
-                if (!job.current || job.current.body !== body)
-                  job.current = {
-                    body,
-                    id: await service.newId(auth.user.uid),
-                  };
-                await service.publish(auth.user.uid, {
-                  roomId: room,
-                  kind: "message",
-                  contentId: job.current.id,
-                  body,
-                });
-                setBody("");
-                job.current = null;
-                nearBottom.current = true;
+                const result = await service.olderMessages(
+                  auth.user.uid,
+                  room,
+                  cursor.current || live.at(-1)?.cursor,
+                );
+                setHistory((old) =>
+                  [
+                    ...new Map(
+                      [...old, ...result.items].map((item) => [
+                        item.id,
+                        item,
+                      ]),
+                    ).values(),
+                  ].slice(-150),
+                );
+                cursor.current = result.cursor;
+                setMore(result.hasMore);
               } catch (err) {
                 setError(communityErrorKey(err));
               } finally {
-                lock.current = false;
                 setBusy(false);
               }
             }}
           >
-            <label className="visually-hidden" htmlFor="chat-message-input">
-              {tx("messageBody")}
-            </label>
-            <textarea
-              id="chat-message-input"
-              name="messageBody"
-              rows={2}
-              maxLength={500}
-              required
-              disabled={!canWrite || !enabled || busy}
-              value={body}
-              placeholder={tx(
-                canWrite ? "messagePlaceholder" : "writeRequirements",
-              )}
-              onChange={(event) => setBody(event.target.value)}
-            />
-            <button
-              className="auth-button"
-              disabled={!canWrite || !enabled || busy || !body.trim()}
-            >
-              {tx(busy ? "authBusy" : "sendMessage")}
-            </button>
-          </form>
-        </>
+            {tx("olderMessages")}
+          </button>
+        )}
+        {items.map((item) => (
+          <article
+            className={
+              "chat-message " +
+              (item.authorId === auth.profile?.userId ? "mine" : "incoming")
+            }
+            key={item.id}
+          >
+            <Author item={item} lang={lang} tx={tx} showFlag showTime={false} />
+            <p className="content-body chat-bubble">{item.body}</p>
+            <div className="chat-message-footer">
+              <time>
+                {item.createdAt?.toDate?.().toLocaleString(lang) || tx("justNow")}
+              </time>
+              <ContentTools
+                item={{
+                  ...item,
+                  roomId: room,
+                  kind: "message",
+                  parentId: "",
+                  contentId: item.id,
+                }}
+                own={item.authorId === auth.profile?.userId}
+                service={service}
+                blocked={false}
+                onChange={
+                  item.authorId === auth.profile?.userId
+                    ? () =>
+                        setHistory((old) =>
+                          old.filter((row) => row.id !== item.id),
+                        )
+                    : undefined
+                }
+              />
+            </div>
+          </article>
+        ))}
+        {items.length === 0 && (
+          <p className="community-empty">{tx("noMessages")}</p>
+        )}
+      </div>
+      {!enabled && <p role="status">{tx("chatPaused")}</p>}
+      {!visible && <p role="status">{tx("chatInactive")}</p>}
+      {error && (
+        <div className="community-error" role="alert">
+          <p>{tx(error)}</p>
+          <button
+            className="auth-text-link"
+            onClick={() => setRetry((value) => value + 1)}
+          >
+            {tx("retry")}
+          </button>
+        </div>
       )}
+      <form
+        className="chat-compose"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (lock.current || !canWrite || !enabled || !body.trim()) return;
+          lock.current = true;
+          setBusy(true);
+          setError(null);
+          try {
+            if (!job.current || job.current.body !== body)
+              job.current = {
+                body,
+                id: await service.newId(auth.user.uid),
+              };
+            await service.publish(auth.user.uid, {
+              roomId: room,
+              kind: "message",
+              contentId: job.current.id,
+              body,
+            });
+            setBody("");
+            job.current = null;
+            nearBottom.current = true;
+          } catch (err) {
+            setError(communityErrorKey(err));
+          } finally {
+            lock.current = false;
+            setBusy(false);
+          }
+        }}
+      >
+        <label className="visually-hidden" htmlFor="chat-message-input">
+          {tx("messageBody")}
+        </label>
+        <textarea
+          id="chat-message-input"
+          name="messageBody"
+          rows={2}
+          maxLength={500}
+          required
+          disabled={!canWrite || !enabled || busy}
+          value={body}
+          placeholder={tx(
+            canWrite ? "messagePlaceholder" : "writeRequirements",
+          )}
+          onChange={(event) => setBody(event.target.value)}
+        />
+        <button
+          className="auth-button"
+          disabled={!canWrite || !enabled || busy || !body.trim()}
+        >
+          {tx(busy ? "authBusy" : "sendMessage")}
+        </button>
+      </form>
     </aside>
   );
 }

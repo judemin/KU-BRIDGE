@@ -51,6 +51,15 @@ test("board, editor and chat use independent routes, flags and subscription life
   const listeners = new Set();
   let starts = 0,
     stops = 0;
+  let updateMessages;
+  const otherMessage = {
+    id: "msg-one", authorId: "bob_ku", nationality: "JP",
+    body: "Hello from Japan", status: "visible",
+  };
+  const ownMessage = {
+    id: "msg-own", authorId: "alice_ku", nationality: "KR",
+    body: "My message", status: "visible",
+  };
   const authService = {
     getSnapshot: () => state,
     subscribe: (fn) => {
@@ -96,15 +105,8 @@ test("board, editor and chat use independent routes, flags and subscription life
     },
     watchMessages(uid, room, next) {
       starts++;
-      next([
-        {
-          id: "msg-one",
-          authorId: "bob_ku",
-          nationality: "JP",
-          body: "Hello from Japan",
-          status: "visible",
-        },
-      ]);
+      updateMessages = next;
+      next([otherMessage, ownMessage]);
       return () => {
         stops++;
       };
@@ -207,6 +209,31 @@ test("board, editor and chat use independent routes, flags and subscription life
     assert.equal(document.querySelector(".community-board"), null);
     assert.ok(document.querySelector(".community-chat"));
     assert.equal(starts, 1);
+    assert.equal(document.querySelector(".chat-collapse"), null);
+    assert.equal(document.querySelector(".chat-message.mine .chat-bubble").textContent, "My message");
+    assert.equal(document.querySelector(".chat-message.incoming .chat-bubble").textContent, "Hello from Japan");
+    assert.ok(document.querySelector(".chat-message.mine .chat-message-footer time"));
+    const chatScroll = document.querySelector(".chat-scroll");
+    Object.defineProperties(chatScroll, {
+      scrollHeight: { configurable: true, value: 1000 },
+      clientHeight: { configurable: true, value: 300 },
+    });
+    let pageScrolls = 0;
+    window.scrollTo = () => { pageScrolls++; };
+    window.HTMLElement.prototype.scrollIntoView = () => { pageScrolls++; };
+    chatScroll.scrollTop = 120;
+    await act(async () => {
+      chatScroll.dispatchEvent(new window.Event("scroll"));
+      updateMessages([{ ...otherMessage, id: "msg-new" }, otherMessage, ownMessage]);
+    });
+    assert.equal(chatScroll.scrollTop, 120, "Reading older messages must preserve the position");
+    chatScroll.scrollTop = 700;
+    await act(async () => {
+      chatScroll.dispatchEvent(new window.Event("scroll"));
+      updateMessages([{ ...otherMessage, id: "msg-newer" }, otherMessage, ownMessage]);
+    });
+    assert.equal(chatScroll.scrollTop, 1000, "New messages follow only inside the chat container");
+    assert.equal(pageScrolls, 0, "New messages must not move the outer page");
     assert.equal(
       document
         .querySelector(".chat-message img.country-flag")
