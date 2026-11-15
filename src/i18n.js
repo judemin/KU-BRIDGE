@@ -1,25 +1,25 @@
 // Locale dictionary. Translations are informational, not official university translations.
-const rows=`brand|유학생이 길을 찾는 곳|A clearer path for international students|留学生的校园指南|留学生のキャンパス案内
+const rows = `brand|건국대 유학생 생활 안내|Konkuk international student guide|建国大学留学生指南|建国大学 留学生ガイド
 subbrand|건국대학교 서울캠퍼스 독립 안내 서비스|Independent guide for Konkuk University Seoul Campus|建国大学首尔校区独立信息指南|建国大学ソウルキャンパス非公式ガイド
 navHome|홈|Home|首页|ホーム
-navExplore|제도 찾기|Explore|查找制度|制度を探す
-navHelp|어디에 문의할까요?|Who should I ask?|应该联系谁？|どこに相談する？
+navExplore|학교생활 안내|Student guide|校园指南|学生生活ガイド
+navHelp|문의처 찾기|Contact offices|咨询部门|問い合わせ先
 navChecklist|나의 체크리스트|My checklist|我的清单|チェックリスト
 navSaved|저장한 항목|Saved|已收藏|保存済み
 locale|언어|Language|语言|言語
 heroEyebrow|KONKUK UNIVERSITY · SEOUL CAMPUS|KONKUK UNIVERSITY · SEOUL CAMPUS|建国大学 · 首尔校区|建国大学 · ソウルキャンパス
-heroTitle|처음이라 몰랐던 지원, 여기서 발견하세요.|Find support you didn't know existed.|发现你不知道的校园支持。|知らなかった支援を、ここで見つけよう。
-heroDesc|수업부터 졸업까지, 지금 겪는 어려움에서 출발해 담당 부서와 공식 안내로 연결합니다.|Start with what you're facing, then find an official guide and where to ask—from classes to graduation.|从你遇到的问题出发，找到官方指南和咨询部门，涵盖课堂到毕业。|困っていることから始めて、授業から卒業まで公式案内と相談先を見つけます。
+heroTitle|건국대 생활, 필요한 정보부터.|A practical guide to life at Konkuk.|在建国大学，从这里了解校园生活。|建国大学の学生生活に、必要な情報を。
+heroDesc|수강신청, 장학금, 비자, 졸업 준비. 여러 곳에 흩어진 학교 안내와 문의처를 한곳에서 찾아보세요.|Find university information and the right office for course registration, scholarships, visas and graduation.|选课、奖学金、签证、毕业准备。在这里查找学校信息和咨询部门。|履修登録、奨学金、ビザ、卒業準備。大学の案内と問い合わせ先をまとめました。
 heroPrimary|내 상황으로 찾기|Find help for my situation|按我的情况查找|悩みから探す
 heroSecondary|모든 안내 보기|Browse all topics|查看全部指南|すべての案内を見る
 statsTopics|탐색 주제|Topics|导航主题|案内テーマ
 statsLanguages|지원 언어|Languages|支持语言|対応言語
 statsSources|공식 자료 연결|Official references|官方资料入口|公式資料リンク
-notice|이 서비스는 건국대학교의 공식 웹사이트가 아닌 독립 안내 프로젝트입니다. 자격, 마감일, 수수료 및 담당 부서는 공식 원문에서 다시 확인하세요.|This is an independent guide, not an official university service. Verify eligibility, deadlines, fees and office responsibilities in the linked official materials.|本网站为独立指南，并非大学官方网站。资格、期限、费用及负责部门请以官方原文为准。|本サイトは大学公式ではない独立ガイドです。資格・期限・料金・担当部署は必ず公式資料で再確認してください。
-sectionIssues|어떤 점이 어려우신가요?|What do you need help with?|你遇到了什么困难？|何に困っていますか？
-sectionIssuesDesc|제도 이름을 몰라도 괜찮습니다. 지금의 문제에서 시작하세요.|You don't need to know the program name. Start with your concern.|不知道制度名称也没关系。从眼前的问题开始。|制度名が分からなくても大丈夫。悩みから探せます。
-sectionExplore|학생에게 필요한 안내|Helpful topics, all in one place|校园生活信息一站式查询|必要な案内を一か所で
-sectionExploreDesc|건국대학교 공식 자료로 이어지는 주제를 찾아보세요.|Discover topics linking to Konkuk University's official information.|查找通往建国大学官方资料的主题。|建国大学の公式情報につながるテーマを探せます。
+notice|건국대 학생을 위한 비공식 안내입니다. 신청 기간과 세부 조건은 연결된 학교 공지를 확인해 주세요.|An independent student guide. Check the linked university notices for current dates and requirements.|本网站为非官方学生指南。申请时间和具体要求请查看链接中的学校公告。|学生向けの非公式ガイドです。申請期間や詳しい条件は、リンク先の大学のお知らせをご確認ください。
+sectionIssues|어떤 정보가 필요한가요?|What are you looking for?|你需要哪方面的信息？|何を調べたいですか？
+sectionIssuesDesc|궁금한 내용을 선택하면 관련 안내로 이동합니다.|Choose a topic to see the relevant information.|选择主题，查看相关信息。|項目を選ぶと、関連する案内を確認できます。
+sectionExplore|학교생활 안내|Student guide|校园生活指南|学生生活ガイド
+sectionExploreDesc|학생 유형과 분야별로 학교 안내를 찾아보세요.|Browse university information by student type and category.|按学生类型和类别查找学校信息。|学生区分や分野で大学の案内を探せます。
 studentType|학생 유형|Student type|学生类型|学生区分
 cat|분야|Category|类别|カテゴリ
 searchPlaceholder|장학금, 졸업, 비자, 수업 등 검색|Search scholarships, graduation, visas, classes…|搜索奖学金、毕业、签证、选课等|奨学金・卒業・ビザ・授業などを検索
@@ -51,8 +51,8 @@ direct|관련 내용 확인|Topic mentioned in source|来源提及该主题|資�
 path|공식 안내 경로|Official information path|官方信息入口|公式情報への案内
 historical|과거 모집 사례|Historical notice|往期公告|過去の募集案内
 verifyAlert|이 화면은 지원 자격이나 현재 모집 여부를 확정하지 않습니다. 최신 공식 공지를 확인하세요.|This page does not confirm your eligibility or current application availability. Check the latest official notices.|本页不确认个人资格或当前报名状态，请核对最新官方公告。|申請資格や現在の募集状況を確定するものではありません。最新の公式情報をご確認ください。
-askTitle|문의할 부서를 찾아보세요|Find the right place to ask|查找咨询部门|適切な問い合わせ先を探す
-askDesc|학생 유형과 문의 주제를 선택하면 문의 시작점과 다음 절차를 안내합니다. 실제 접수·부서 간 이관은 제공하지 않습니다.|Choose your student type and question. We show a suggested starting point; we do not submit or transfer inquiries.|选择学生类型和问题，查看建议的咨询入口。本站不代办咨询或部门转交。|学生区分と質問を選ぶと相談の入り口を案内します。問い合わせの受付・転送は行いません。
+askTitle|문의처 찾기|Find a contact office|查找咨询部门|問い合わせ先を探す
+askDesc|학생 유형과 문의 내용을 선택하세요. 연락할 부서와 문의할 때 쓸 문안을 확인할 수 있습니다.|Choose your student type and topic to find an office and a message you can use when contacting them.|选择学生类型和咨询主题，查看咨询部门及邮件示例。|学生区分と相談内容を選ぶと、問い合わせ先と文面の例を確認できます。
 askTopic|문의 내용|Question topic|咨询主题|相談内容
 askGo|문의 경로 확인|Show contact route|查看咨询路径|問い合わせ先を見る
 askPrimary|우선 문의처|Suggested first contact|建议首先联系|最初の相談先
@@ -98,18 +98,18 @@ checkE2|수강신청 및 강의계획서 확인|Confirm registration and syllabi
 checkE3|성적표 및 종료 서류 확인|Review transcript and departure documents|核对成绩单与离校材料|成績証明書・帰国書類を確認
 checkL1|어학과정의 출석·수료 기준 확인|Check language program attendance rules|确认语言课程出勤与结业标准|語学課程の出席・修了基準を確認
 checkL2|체류 상태와 다음 과정 계획 점검|Review stay status and next study plans|核对居留状态及后续学习计划|在留資格と次の進路を確認
-trustTitle|정보를 어떻게 확인했나요?|How this guide treats evidence|我们如何标注信息|情報の根拠について
-trustDesc|학교 공식 자료에서 관련 항목이 확인된 경우와 단순한 공식 안내 경로를 구분합니다. 과거 공지는 신청 자격이 있는 것으로 간주하지 마세요.|We distinguish topics mentioned in official materials from general official navigation paths. Historical notices do not imply current availability.|我们区分官方资料中提到的内容与一般信息入口。往期公告不代表当前可申请。|公式資料に記載された内容と、一般的な公式案内先を区別します。過去の募集は現在の受付を意味しません。
+trustTitle|학교 공지를 확인할 때|Reading university notices|查看学校公告时|大学のお知らせを確認するとき
+trustDesc|안내마다 공식 자료 링크와 자료 유형을 표시했습니다. 과거 모집 공지는 참고용이며, 현재 신청 일정은 해당 부서의 최신 공지를 확인해 주세요.|Each topic includes its university reference and information type. Past notices are for reference; check with the office for current application dates.|每个主题均附有学校资料链接及类型。往期公告仅供参考，当前申请时间请查看相关部门的最新公告。|各項目に大学の資料リンクと種類を記載しています。過去の募集は参考用です。現在の日程は担当部署の最新情報をご確認ください。
 footer|본 프로젝트는 건국대학교 공식 서비스를 대체하지 않습니다.|An independent project; not a replacement for university services.|本项目不能代替学校官方服务。|本プロジェクトは大学公式サービスに代わるものではありません。
 viewAll|모든 자료로 이동|Browse all topics|浏览所有主题|すべてを見る
 close|닫기|Close|关闭|閉じる
 clear|검색 초기화|Clear search|清除搜索|検索をクリア
 menu|메뉴 열기|Open menu|打开菜单|メニューを開く
-issueClass|수업 내용을 이해하기 어려워요|I struggle to follow lectures|我听课有困难|授業についていくのが難しい
-issueFriends|한국인 친구를 사귀고 싶어요|I'd like to make friends|我想交朋友|友達を作りたい
-issueAdmin|어디에 문의할지 모르겠어요|I don't know whom to ask|不知道该找哪个部门|問い合わせ先が分からない
-issueGraduation|졸업할 수 있을지 걱정돼요|I'm worried about graduating|我担心能否毕业|卒業できるか不安
-issueMoney|장학금이나 생활 지원이 필요해요|I need funding or living support|我需要奖学金或生活支持|奨学金・生活支援を探したい
+issueClass|수업·학습 지원|Classes & study support|课程与学习支持|授業・学修支援
+issueFriends|친구·학생 교류|Friends & student exchange|交友与学生交流|友人・学生交流
+issueAdmin|행정 문의|Administrative questions|教务与行政咨询|学務・手続きの相談
+issueGraduation|졸업 준비|Preparing to graduate|毕业准备|卒業準備
+issueMoney|장학금·주거 지원|Scholarships & housing|奖学金与住宿|奨学金・住まい
 issueClassDesc|글쓰기, 학습 지원 및 강의 정보를 찾아보세요.|Explore writing, study support and course information.|查找写作、学习支持及课程信息。|文章指導、学修支援、授業情報を探せます。
 issueFriendsDesc|학생 교류, Buddy 및 한국어 프로그램을 살펴보세요.|Discover student connections, buddies and language support.|探索同学交流、学伴和语言项目。|交流、Buddy、韓国語プログラムを探せます。
 issueAdminDesc|학생 유형에 따라 문의 시작점을 안내합니다.|Find the suggested starting office for your situation.|按学生类型查找咨询入口。|学生区分に応じた相談先を探せます。
@@ -121,10 +121,22 @@ detailAbout|무엇을 안내하나요?|What this covers|项目说明|この案�
 detailNext|지금 할 일|Recommended next step|建议下一步|次に確認すること
 detailAudience|관련 대상|Relevant students|相关学生|対象学生
 detailEvidence|확인한 근거|Evidence and status|资料依据|根拠と状況
-`; 
-const translations={ko:{},en:{},zh:{},ja:{}};
-for(const line of rows.trim().split('\n')){
-  const [key,ko,en,zh,ja]=line.split('|');
-  translations.ko[key]=ko;translations.en[key]=en;translations.zh[key]=zh;translations.ja[key]=ja;
+search|검색|Search|搜索|検索
+quickTopics|자주 찾는 정보|Quick links|常用信息|よく使う情報
+quickGuide|바로 가기|Where to start|快捷入口|クイックアクセス
+quickExploreDesc|수업부터 생활까지, 분야별 안내|Information for classes and daily life|课程及日常生活信息|授業から暮らしまで、分野別の案内
+quickHelpDesc|내 질문을 담당하는 학교 부서|The university office for your question|找到负责你问题的学校部门|相談内容に合う大学の窓口
+quickCheckDesc|학점·서류·졸업요건 확인|Keep track of credits and requirements|核对学分、材料及毕业要求|単位・書類・卒業要件を確認
+savedDesc|저장한 안내를 다시 확인하세요. 이 브라우저에 보관됩니다.|Revisit your saved topics. They are stored in this browser.|查看收藏的信息。收藏保存在本浏览器。|保存した案内を確認できます。このブラウザに保存されます。
+copyFailed|자동 복사를 사용할 수 없습니다. 위 문안을 선택해 복사해 주세요.|Copy is unavailable. Select and copy the message above.|无法自动复制，请选择上方文字并复制。|自動コピーできません。上の文面を選択してコピーしてください。
+skipContent|본문으로 이동|Skip to content|跳至正文|本文へ移動
+`;
+const translations = { ko: {}, en: {}, zh: {}, ja: {} };
+for (const line of rows.trim().split("\n")) {
+  const [key, ko, en, zh, ja] = line.split("|");
+  translations.ko[key] = ko;
+  translations.en[key] = en;
+  translations.zh[key] = zh;
+  translations.ja[key] = ja;
 }
 export default translations;
