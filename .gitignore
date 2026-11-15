@@ -11,3 +11,4 @@ dist/
 .dev.vars.*
 *.service-account.json
 .DS_Store
+.private-backups/

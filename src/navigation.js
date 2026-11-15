@@ -8,6 +8,8 @@ export const PAGE_PATHS = Object.freeze({
   saved: "/my/saved",
   account: "/account",
   privacy: "/privacy",
+  community: "/community",
+  admin: "/admin",
 });
 const LOCATION_EVENT = "ku-bridge:navigate";
 

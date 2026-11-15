@@ -1,41 +1,63 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useApp } from "../context.jsx";
 import { authErrorKey } from "../services/auth.js";
+import { communityService } from "../services/community.js";
 import PageLink from "../components/PageLink.jsx";
 import { useLocation, parseLocation } from "../navigation.js";
+import {
+  COUNTRY_CODES,
+  ROOM_IDS,
+  countryName,
+  normalizeUserId,
+  validUserId,
+  validRoom,
+  roomForCountry,
+} from "../communityConfig.js";
 
-const COUNTRIES = [
-  "cn",
-  "vn",
-  "mn",
-  "uz",
-  "kz",
-  "jp",
-  "kr",
-  "th",
-  "id",
-  "in",
-  "us",
-  "ru",
-  "np",
-  "bd",
-  "pk",
-  "my",
-  "ph",
-  "tw",
-  "de",
-  "fr",
-  "gb",
-];
-function Preferences({ value, onChange, tx, lang }) {
-  const regions =
-    typeof Intl.DisplayNames === "function"
-      ? new Intl.DisplayNames([lang], { type: "region" })
-      : null;
+function Preferences({ value, onChange, tx, lang, lockedId = false }) {
   const change = (key) => (event) =>
     onChange({ ...value, [key]: event.target.value });
   return (
     <div className="account-preferences">
+      <label>
+        {tx("userId")}
+        <input
+          name="userId"
+          autoComplete="username"
+          required
+          minLength={3}
+          maxLength={20}
+          pattern="[a-zA-Z][a-zA-Z0-9_]{2,19}"
+          readOnly={lockedId}
+          value={value.userId || ""}
+          onChange={change("userId")}
+          aria-describedby="user-id-hint"
+        />
+      </label>
+      <p id="user-id-hint" className="auth-hint">
+        {tx(lockedId ? "userIdLocked" : "userIdHint")}
+      </p>
+      <label>
+        {tx("nationality")}
+        <select
+          name="nationality"
+          required
+          value={value.nationality || ""}
+          onChange={change("nationality")}
+        >
+          <option value="">{tx("chooseNationality")}</option>
+          {[...COUNTRY_CODES]
+            .sort((a, b) =>
+              countryName(a, lang).localeCompare(countryName(b, lang)),
+            )
+            .map((code) => (
+              <option key={code} value={code}>
+                {countryName(code, lang)}
+              </option>
+            ))}
+        </select>
+      </label>
+      <p className="auth-hint">{tx("publicIdentityHint")}</p>
       <label>
         {tx("locale")}
         <select name="locale" value={value.locale} onChange={change("locale")}>
@@ -74,16 +96,9 @@ function Preferences({ value, onChange, tx, lang }) {
           aria-describedby="room-hint"
         >
           <option value="global">{tx("authGlobal")}</option>
-          {[
-            ...new Set([
-              ...COUNTRIES,
-              ...(value.preferredRoom.startsWith("country-")
-                ? [value.preferredRoom.slice(8)]
-                : []),
-            ]),
-          ].map((code) => (
-            <option value={`country-${code}`} key={code}>
-              {regions?.of(code.toUpperCase()) || code.toUpperCase()}
+          {ROOM_IDS.filter((room) => room !== "global").map((room) => (
+            <option value={room} key={room}>
+              {tx(`room_${room}`)}
             </option>
           ))}
         </select>
@@ -96,7 +111,17 @@ function Preferences({ value, onChange, tx, lang }) {
 }
 
 export default function AccountPage() {
-  const { tx, lang, auth, authService, navigate, setLocale } = useApp();
+  const {
+    tx,
+    lang,
+    auth,
+    authService,
+    navigate,
+    setLocale,
+    communityApi,
+    saved,
+    checked,
+  } = useApp();
   const location = useLocation();
   const requestedMode = parseLocation(location).params.get("mode");
   const mode = ["signup", "reset"].includes(requestedMode)
@@ -110,6 +135,8 @@ export default function AccountPage() {
     locale: lang,
     studentType: "all",
     preferredRoom: "global",
+    userId: "",
+    nationality: "",
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -138,13 +165,19 @@ export default function AccountPage() {
       setPreferences({
         locale: auth.profile.locale,
         studentType: auth.profile.studentType,
-        preferredRoom: auth.profile.preferredRoom,
+        preferredRoom: validRoom(auth.profile.preferredRoom)
+          ? auth.profile.preferredRoom
+          : roomForCountry(auth.profile.nationality),
+        userId: auth.profile.userId || "",
+        nationality: auth.profile.nationality || "",
       });
     else
       setPreferences({
         locale: lang,
         studentType: "all",
         preferredRoom: "global",
+        userId: "",
+        nationality: "",
       });
   }, [auth.user?.uid, auth.profile]);
   useEffect(() => {
@@ -183,6 +216,14 @@ export default function AccountPage() {
   async function submit(event) {
     event.preventDefault();
     if (mode === "signup") {
+      if (!validUserId(normalizeUserId(preferences.userId))) {
+        setError("userIdInvalid");
+        return;
+      }
+      if (!COUNTRY_CODES.includes(preferences.nationality)) {
+        setError("nationalityRequired");
+        return;
+      }
       if (password.length < 8) {
         setError("authErrorPassword");
         return;
@@ -367,6 +408,7 @@ export default function AccountPage() {
                     )}
                     <Preferences
                       value={preferences}
+                      lockedId={!!auth.profile?.userId}
                       onChange={setPreferences}
                       tx={tx}
                       lang={lang}
@@ -380,6 +422,47 @@ export default function AccountPage() {
             </section>
           )}
           <p className="auth-hint">{tx("authLocalRecords")}</p>
+          {!auth.deletionPending && (
+            <button
+              className="auth-button secondary"
+              disabled={busy}
+              onClick={() =>
+                run(async () => {
+                  const uid = auth.user.uid;
+                  const content = await (
+                    communityApi || communityService
+                  ).exportOwn(uid);
+                  if (authService.getSnapshot().user?.uid !== uid) return;
+                  const data = {
+                    exportedAt: new Date().toISOString(),
+                    profile: auth.profile,
+                    saved,
+                    checked,
+                    content,
+                  };
+                  const url = URL.createObjectURL(
+                    new Blob([JSON.stringify(data, null, 2)], {
+                      type: "application/json",
+                    }),
+                  );
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = "ku-bridge-my-data.json";
+                  link.click();
+                  setTimeout(() => URL.revokeObjectURL(url), 1000);
+                  notice("exportDone");
+                })
+              }
+            >
+              {tx("exportData")}
+            </button>
+          )}
+
+          {auth.isAdmin && (
+            <PageLink page="admin" className="auth-button secondary">
+              {tx("adminTitle")}
+            </PageLink>
+          )}
           <section className="account-panel account-danger">
             <h2>{tx("authDelete")}</h2>
             <p>{tx("authDeleteIntro")}</p>

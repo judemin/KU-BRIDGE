@@ -290,11 +290,10 @@ test("forged checklist types, cross-type keys, duplicates and stale timestamps a
     }),
   );
 });
-test("community data and private identity mappings are closed to all browser accounts in stage 2", async () => {
+test("paused community and retired anonymous identity mappings are closed to ordinary accounts", async () => {
   for (const store of [
     env.unauthenticatedContext().firestore(),
     db(),
-    db("operator"),
     db("attacker", { admin: true }),
   ]) {
     for (const path of [
@@ -311,7 +310,7 @@ test("community data and private identity mappings are closed to all browser acc
     }
   }
 });
-test("only the explicit public feature document is readable; feature flags are not browser-writable", async () => {
+test("only the public feature document is guest-readable and only administrators can pause service", async () => {
   const store = env.unauthenticatedContext().firestore();
   const snapshot = await assertSucceeds(
     getDoc(doc(store, "serviceConfig/public")),
@@ -322,11 +321,12 @@ test("only the explicit public feature document is readable; feature flags are n
   });
   await assertFails(getDocs(collection(store, "serviceConfig")));
   await assertFails(
-    setDoc(doc(db("operator"), "serviceConfig/public"), {
+    setDoc(doc(db("alice"), "serviceConfig/public"), {
       communityEnabled: true,
       chatEnabled: true,
     }),
   );
+  await assertSucceeds(setDoc(doc(db("operator"),"serviceConfig/public"),{communityEnabled:true,chatEnabled:false}));
 });
 test("profile deletion cannot leave a misleading partially deleted account", async () => {
   await assertFails(deleteDoc(doc(db(), "users/alice")));

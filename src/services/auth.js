@@ -3,6 +3,12 @@ import {
   getFirebaseAuthServices,
   getFirebaseStatus,
 } from "./firebase.js";
+import {
+  COUNTRY_CODES,
+  normalizeUserId,
+  validUserId,
+} from "../communityConfig.js";
+import { cleanupCommunityAccount } from "./community.js";
 
 export function authErrorKey(error) {
   const code = typeof error === "string" ? error : error?.code;
@@ -27,6 +33,10 @@ export function authErrorKey(error) {
       "auth/protected-account": "authErrorProtected",
       "auth/session-changed": "authErrorRecent",
       "permission-denied": "authErrorPermission",
+      "auth/user-id-invalid": "userIdInvalid",
+      "auth/user-id-taken": "userIdTaken",
+      "auth/user-id-locked": "userIdLocked",
+      "auth/nationality-required": "nationalityRequired",
     }[code] || "authErrorGeneric"
   );
 }
@@ -45,6 +55,8 @@ const emptyState = (status) => ({
   profileStatus: "idle",
   deletionPending: false,
   errorKey: null,
+  isAdmin: false,
+  suspended: false,
 });
 
 // Emulator tests inject real local SDK instances; the production path stays lazy.
@@ -99,15 +111,20 @@ export function createAuthService({
   };
   const readAccount = async (user, version) => {
     const { db, dbSdk: d } = await connectDb();
-    const [profile, deletion] = await Promise.all([
+    const [profile, deletion, admin, moderation] = await Promise.all([
       d.getDocFromServer(d.doc(db, "users", user.uid)),
       d.getDocFromServer(d.doc(db, "accountDeletions", user.uid)),
+      d.getDocFromServer(d.doc(db, "admins", user.uid)),
+      d.getDocFromServer(d.doc(db, "moderation", user.uid)),
     ]);
     if (revision !== version || disposed) return;
     publish({
       profile: profile.exists() ? profile.data() : null,
       profileStatus: profile.exists() ? "ready" : "missing",
       deletionPending: deletion.exists(),
+      isAdmin: admin.exists() && admin.data().role === "admin",
+      suspended:
+        moderation.exists() && moderation.data().status === "suspended",
       errorKey: null,
     });
   };
@@ -180,7 +197,7 @@ export function createAuthService({
     if (
       !["en", "ko", "zh", "ja"].includes(locale) ||
       !["all", "u", "g", "e", "l"].includes(studentType) ||
-      !/^(global|country-[a-z]{2})$/.test(preferredRoom)
+      !/^(global|anglophone|country-[a-z]{2})$/.test(preferredRoom)
     )
       fail("permission-denied");
     const ref = d.doc(db, "users", user.uid);
@@ -191,6 +208,30 @@ export function createAuthService({
       const existing = await transaction.get(ref);
       assertCurrent(auth, user);
       if (deletion.exists()) fail("auth/deletion-pending");
+      const old = existing.exists() ? existing.data() : {};
+      const userId = normalizeUserId(preferences.userId ?? old.userId ?? "");
+      const nationality = String(
+        preferences.nationality ?? old.nationality ?? "",
+      ).toUpperCase();
+      let reservation;
+      if (userId || nationality) {
+        if (!validUserId(userId)) fail("auth/user-id-invalid");
+        if (!COUNTRY_CODES.includes(nationality))
+          fail("auth/nationality-required");
+        if (old.userId && old.userId !== userId) fail("auth/user-id-locked");
+        try {
+          reservation = await transaction.get(d.doc(db, "userIds", userId));
+        } catch (error) {
+          if (error.code === "permission-denied") fail("auth/user-id-taken");
+          throw error;
+        }
+        if (
+          reservation.exists() &&
+          (reservation.data().ownerId !== user.uid ||
+            reservation.data().state !== "active")
+        )
+          fail("auth/user-id-taken");
+      }
       transaction.set(ref, {
         locale,
         studentType,
@@ -199,7 +240,21 @@ export function createAuthService({
           ? existing.data().createdAt
           : d.serverTimestamp(),
         updatedAt: d.serverTimestamp(),
+        ...(userId ? { userId, nationality } : {}),
       });
+      if (userId) {
+        if (!reservation.exists())
+          transaction.set(d.doc(db, "userIds", userId), {
+            ownerId: user.uid,
+            state: "active",
+            createdAt: d.serverTimestamp(),
+          });
+        transaction.set(d.doc(db, "profiles", userId), {
+          userId,
+          nationality,
+          updatedAt: d.serverTimestamp(),
+        });
+      }
     });
     assertCurrent(auth, user);
     await acceptUser(user);
@@ -289,16 +344,25 @@ export function createAuthService({
           d.doc(db, "moderation", user.uid),
         );
         assertCurrent(auth, user);
-        if (admin.exists() || moderation.exists())
+        if (
+          admin.exists() ||
+          (moderation.exists() && moderation.data().status === "suspended")
+        )
           fail("auth/protected-account");
         if (!deletion.exists())
           transaction.set(deletionRef, { requestedAt: d.serverTimestamp() });
       });
       revision++;
       publish({ deletionPending: true });
+      await cleanupCommunityAccount({
+        db,
+        d,
+        uid: user.uid,
+        assertCurrent: () => assertCurrent(auth, user),
+      });
       // Keep this cleanup in sync before introducing new personal collections.
       const snapshots = await Promise.all(
-        ["saved", "checklists"].map((name) =>
+        ["saved", "checklists", "blocks", "limits"].map((name) =>
           d.getDocs(d.collection(db, "users", user.uid, name)),
         ),
       );
@@ -312,7 +376,21 @@ export function createAuthService({
         await batch.commit();
       }
       assertCurrent(auth, user);
-      await d.deleteDoc(d.doc(db, "users", user.uid));
+      const profile = await d.getDocFromServer(d.doc(db, "users", user.uid));
+      const finalBatch = d.writeBatch(db);
+      if (profile.exists() && profile.data().userId) {
+        finalBatch.delete(d.doc(db, "profiles", profile.data().userId));
+        finalBatch.update(d.doc(db, "userIds", profile.data().userId), {
+          state: "retired",
+        });
+      }
+      const moderation = await d.getDocFromServer(
+        d.doc(db, "moderation", user.uid),
+      );
+      if (moderation.exists() && moderation.data().status === "active")
+        finalBatch.delete(moderation.ref);
+      finalBatch.delete(d.doc(db, "users", user.uid));
+      await finalBatch.commit();
       assertCurrent(auth, user);
       await a.deleteUser(user);
       await acceptUser(null);

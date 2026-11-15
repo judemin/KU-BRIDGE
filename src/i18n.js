@@ -1,4 +1,5 @@
 import authCopy from "./authCopy.js";
+import communityCopy from "./communityCopy.js";
 // Locale dictionary. Translations are informational, not official university translations.
 const rows = `brand|건국대 유학생 생활 안내|Konkuk international student guide|建国大学留学生指南|建国大学 留学生ガイド
 subbrand|건국대학교 서울캠퍼스 독립 안내 서비스|Independent guide for Konkuk University Seoul Campus|建国大学首尔校区独立信息指南|建国大学ソウルキャンパス非公式ガイド
@@ -146,5 +147,5 @@ for (const line of rows.trim().split("\n")) {
   translations.zh[key] = zh;
   translations.ja[key] = ja;
 }
-for (const locale of Object.keys(translations)) Object.assign(translations[locale], authCopy[locale]);
+for (const locale of Object.keys(translations)) Object.assign(translations[locale], authCopy[locale], communityCopy[locale]);
 export default translations;

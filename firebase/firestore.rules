@@ -8,13 +8,87 @@ service cloud.firestore {
       return signedIn() && request.auth.token.get('auth_time', 0) > request.time.toMillis() / 1000 - 300;
     }
     function fresh(data) { return data.updatedAt == request.time; }
+    function validUserId(id) {
+      return id is string && id.matches('^[a-z][a-z0-9_]{2,19}$')
+        && !(id in ['admin','administrator','moderator','support','system','konkuk','kubridge','ku_bridge','official','deleted']);
+    }
+    function validCountry(country) { return country in ['AD','AE','AF','AG','AI','AL','AM','AO','AQ','AR','AS','AT','AU','AW','AX','AZ','BA','BB','BD','BE','BF','BG','BH','BI','BJ','BL','BM','BN','BO','BQ','BR','BS','BT','BV','BW','BY','BZ','CA','CC','CD','CF','CG','CH','CI','CK','CL','CM','CN','CO','CR','CU','CV','CW','CX','CY','CZ','DE','DJ','DK','DM','DO','DZ','EC','EE','EG','EH','ER','ES','ET','FI','FJ','FK','FM','FO','FR','GA','GB','GD','GE','GF','GG','GH','GI','GL','GM','GN','GP','GQ','GR','GS','GT','GU','GW','GY','HK','HM','HN','HR','HT','HU','ID','IE','IL','IM','IN','IO','IQ','IR','IS','IT','JE','JM','JO','JP','KE','KG','KH','KI','KM','KN','KP','KR','KW','KY','KZ','LA','LB','LC','LI','LK','LR','LS','LT','LU','LV','LY','MA','MC','MD','ME','MF','MG','MH','MK','ML','MM','MN','MO','MP','MQ','MR','MS','MT','MU','MV','MW','MX','MY','MZ','NA','NC','NE','NF','NG','NI','NL','NO','NP','NR','NU','NZ','OM','PA','PE','PF','PG','PH','PK','PL','PM','PN','PR','PS','PT','PW','PY','QA','RE','RO','RS','RU','RW','SA','SB','SC','SD','SE','SG','SH','SI','SJ','SK','SL','SM','SN','SO','SR','SS','ST','SV','SX','SY','SZ','TC','TD','TF','TG','TH','TJ','TK','TL','TM','TN','TO','TR','TT','TV','TW','TZ','UA','UG','UM','US','UY','UZ','VA','VC','VE','VG','VI','VN','VU','WF','WS','YE','YT','ZA','ZM','ZW']; }
+    function admin() {
+      return signedIn() && !deleting(request.auth.uid)
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+    function restricted() {
+      return exists(/databases/$(database)/documents/moderation/$(request.auth.uid))
+        && get(/databases/$(database)/documents/moderation/$(request.auth.uid)).data.status == 'suspended';
+    }
+    function member() { return signedIn() && !deleting(request.auth.uid) && !restricted(); }
+    function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function openRoom(room) {
+      return room in ['global','anglophone','country-cn','country-jp','country-kr']
+        && get(/databases/$(database)/documents/serviceConfig/public).data.communityEnabled == true
+        && get(/databases/$(database)/documents/rooms/$(room)).data.enabled == true;
+    }
+    function reader(room) { return member() && (openRoom(room) || admin()); }
+    function writer(room) {
+      return member() && openRoom(room) && request.auth.token.email_verified == true
+        && validUserId(me().userId) && validCountry(me().nationality);
+    }
+    function key(room, kind, parent, id) { return room + '~' + kind + '~' + parent + '~' + id; }
+    function ownerPath(room, kind, parent, id) {
+      return /databases/$(database)/documents/contentOwners/$(key(room,kind,parent,id));
+    }
+    function contentPath(data) {
+      return data.kind == 'post'
+        ? /databases/$(database)/documents/rooms/$(data.roomId)/posts/$(data.contentId)
+        : data.kind == 'comment'
+          ? /databases/$(database)/documents/rooms/$(data.roomId)/posts/$(data.parentId)/comments/$(data.contentId)
+          : /databases/$(database)/documents/rooms/$(data.roomId)/messages/$(data.contentId);
+    }
+    function ownsContent(room, kind, parent, id) {
+      return signedIn() && get(ownerPath(room,kind,parent,id)).data.ownerId == request.auth.uid;
+    }
+    function pair(room, kind, parent, id) {
+      let data = getAfter(ownerPath(room,kind,parent,id)).data;
+      return data.ownerId == request.auth.uid && data.roomId == room && data.kind == kind
+        && data.parentId == (parent == 'root' ? '' : parent) && data.contentId == id && data.createdAt == request.time;
+    }
+    function throttled(kind, target) {
+      let counter = getAfter(/databases/$(database)/documents/users/$(request.auth.uid)/limits/$(kind)).data;
+      return counter.targetKey == target && counter.lastWriteAt == request.time;
+    }
+    function author(data) { return data.authorId == me().userId && data.nationality == me().nationality; }
+    function authorUnchanged(data) {
+      return data.authorId == resource.data.authorId && data.nationality == resource.data.nationality
+        && data.createdAt == resource.data.createdAt;
+    }
+    function validContent(data, kind) {
+      return data.keys().hasAll(['authorId','nationality','body','status','createdAt','updatedAt'])
+        && data.keys().hasOnly(kind == 'post'
+          ? ['authorId','nationality','body','status','createdAt','updatedAt','title','category']
+          : ['authorId','nationality','body','status','createdAt','updatedAt'])
+        && data.body is string && data.body.size() > 0
+        && data.body.size() <= (kind == 'post' ? 4000 : kind == 'comment' ? 1000 : 500)
+        && data.status in ['visible','hidden'] && fresh(data)
+        && (kind != 'post' || (data.title is string && data.title.size() >= 3 && data.title.size() <= 120
+          && data.category in ['general','question','life','study','exchange']));
+    }
+    function sharedIdentity(data) {
+      return !data.keys().hasAny(['userId','nationality'])
+        || (data.keys().hasAll(['userId','nationality']) && validUserId(data.userId) && validCountry(data.nationality)
+          && getAfter(/databases/$(database)/documents/userIds/$(data.userId)).data.ownerId == request.auth.uid
+          && getAfter(/databases/$(database)/documents/userIds/$(data.userId)).data.state == 'active'
+          && getAfter(/databases/$(database)/documents/profiles/$(data.userId)).data.userId == data.userId
+          && getAfter(/databases/$(database)/documents/profiles/$(data.userId)).data.nationality == data.nationality);
+    }
     function validProfile(data) {
       return data.keys().hasAll(['locale', 'studentType', 'preferredRoom', 'createdAt', 'updatedAt'])
-        && data.keys().hasOnly(['locale', 'studentType', 'preferredRoom', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['locale', 'studentType', 'preferredRoom', 'createdAt', 'updatedAt', 'userId', 'nationality'])
+        && sharedIdentity(data)
         && data.locale in ['en', 'ko', 'zh', 'ja']
         && data.studentType in ['all', 'u', 'g', 'e', 'l']
         && data.preferredRoom is string
-        && (data.preferredRoom == 'global' || data.preferredRoom.matches('^country-[a-z]{2}$'))
+        && (data.preferredRoom in ['global','anglophone'] || data.preferredRoom.matches('^country-[a-z]{2}$'))
         && data.createdAt is timestamp && data.updatedAt is timestamp;
     }
     function knownTopic(id) {
@@ -53,9 +127,13 @@ service cloud.firestore {
         && fresh(request.resource.data) && request.resource.data.createdAt == request.time;
       allow update: if owns(uid) && !deleting(uid) && validProfile(request.resource.data)
         && fresh(request.resource.data)
+        && (!resource.data.keys().hasAny(['userId']) || request.resource.data.userId == resource.data.userId)
         && request.resource.data.createdAt == resource.data.createdAt;
       // The marker closes other tabs' writes before cleanup and Auth deletion.
-      allow delete: if owns(uid) && deleting(uid) && recentLogin();
+      allow delete: if owns(uid) && deleting(uid) && recentLogin()
+        && (resource == null || !resource.data.keys().hasAny(['userId'])
+          || (!existsAfter(/databases/$(database)/documents/profiles/$(resource.data.userId))
+            && getAfter(/databases/$(database)/documents/userIds/$(resource.data.userId)).data.state == 'retired'));
 
       match /saved/{topicId} {
         allow read: if owns(uid);
@@ -71,7 +149,25 @@ service cloud.firestore {
         allow create, update: if owns(uid) && !deleting(uid) && validChecklist(type, request.resource.data);
         allow delete: if owns(uid);
       }
-      // Block lists and write counters are introduced with moderation in stage 6.
+      match /blocks/{userId} {
+        allow read: if owns(uid);
+        allow create: if owns(uid) && !deleting(uid) && validUserId(userId)
+          && request.resource.data.keys().hasOnly(['userId','createdAt'])
+          && request.resource.data.userId == userId && request.resource.data.createdAt == request.time;
+        allow update: if false;
+        allow delete: if owns(uid);
+      }
+      match /limits/{kind} {
+        allow read: if owns(uid);
+        allow create, update: if owns(uid) && !deleting(uid) && kind in ['post','comment','message','report']
+          && request.resource.data.keys().hasAll(['targetKey','lastWriteAt'])
+          && request.resource.data.keys().hasOnly(['targetKey','lastWriteAt'])
+          && request.resource.data.targetKey is string && request.resource.data.targetKey.size() <= 250
+          && request.resource.data.lastWriteAt == request.time
+          && (resource == null || request.time >= resource.data.lastWriteAt
+            + duration.value(kind == 'post' ? 60 : kind == 'comment' ? 3 : kind == 'message' ? 2 : 30, 's'));
+        allow delete: if owns(uid) && deleting(uid);
+      }
       match /{unreleased=**} { allow read, write: if false; }
     }
 
@@ -79,7 +175,8 @@ service cloud.firestore {
       allow get: if owns(uid);
       allow create: if owns(uid) && recentLogin()
         && !exists(/databases/$(database)/documents/admins/$(uid))
-        && !exists(/databases/$(database)/documents/moderation/$(uid))
+        && (!exists(/databases/$(database)/documents/moderation/$(uid))
+          || get(/databases/$(database)/documents/moderation/$(uid)).data.status != 'suspended')
         && request.resource.data.keys().hasOnly(['requestedAt'])
         && request.resource.data.requestedAt == request.time;
       allow list, update, delete: if false;
@@ -91,16 +188,154 @@ service cloud.firestore {
       allow list, write: if false;
     }
     match /moderation/{uid} {
-      allow get: if owns(uid);
-      allow list, write: if false;
+      allow get: if owns(uid) || admin();
+      allow list: if admin() && request.query.limit <= 50;
+      allow create, update: if admin() && request.resource.data.keys().hasOnly(['status','reason','updatedAt'])
+        && request.resource.data.status in ['active','suspended'] && fresh(request.resource.data)
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 500;
+      allow delete: if (owns(uid) && deleting(uid) && resource.data.status == 'active') || admin();
     }
     match /serviceConfig/public {
       allow get: if true;
-      allow list, write: if false;
+      allow list: if false;
+      allow create, update: if admin()
+        && request.resource.data.keys().hasAll(['communityEnabled','chatEnabled'])
+        && request.resource.data.keys().hasOnly(['communityEnabled','chatEnabled'])
+        && request.resource.data.communityEnabled is bool && request.resource.data.chatEnabled is bool;
+      allow delete: if false;
     }
 
-    // Community, aliases, ownership mappings and reports remain closed until their
-    // individual feature stages include matching rules, moderation and abuse tests.
+    match /userIds/{userId} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/userIds/$(userId)) || resource.data.ownerId == request.auth.uid || admin());
+      allow list, delete: if false;
+      allow create: if signedIn() && !deleting(request.auth.uid) && validUserId(userId)
+        && request.resource.data.keys().hasAll(['ownerId','state','createdAt'])
+        && request.resource.data.keys().hasOnly(['ownerId','state','createdAt'])
+        && request.resource.data.ownerId == request.auth.uid && request.resource.data.state == 'active'
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.userId == userId;
+      allow update: if owns(resource.data.ownerId) && deleting(request.auth.uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['state'])
+        && request.resource.data.state == 'retired'
+        && !existsAfter(/databases/$(database)/documents/profiles/$(userId));
+    }
+    match /profiles/{userId} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create, update: if signedIn() && !deleting(request.auth.uid)
+        && request.resource.data.keys().hasAll(['userId','nationality','updatedAt'])
+        && request.resource.data.keys().hasOnly(['userId','nationality','updatedAt'])
+        && request.resource.data.userId == userId && validUserId(userId) && validCountry(request.resource.data.nationality)
+        && fresh(request.resource.data)
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.userId == userId
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.nationality == request.resource.data.nationality
+        && getAfter(/databases/$(database)/documents/userIds/$(userId)).data.ownerId == request.auth.uid;
+      allow delete: if signedIn() && deleting(request.auth.uid)
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userId == userId;
+    }
+    match /rooms/{room} {
+      allow get: if member() && resource.data.enabled == true;
+      allow list: if member() && resource.data.enabled == true && request.query.limit <= 300;
+      allow write: if false;
+      match /posts/{id} {
+        allow get: if (reader(room) && (resource == null || resource.data.status in ['visible','deleted'] || admin())) || ownsContent(room,'post','root',id);
+        allow list: if reader(room) && request.query.limit <= 30 && (resource.data.status == 'visible' || admin());
+        allow create: if writer(room) && validContent(request.resource.data,'post') && author(request.resource.data)
+          && request.resource.data.status == 'visible' && request.resource.data.createdAt == request.time
+          && pair(room,'post','root',id) && throttled('post',key(room,'post','root',id));
+        allow update: if (
+          writer(room) && ownsContent(room,'post','root',id) && resource.data.status == 'visible'
+          && validContent(request.resource.data,'post') && authorUnchanged(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title','body','category','updatedAt'])
+        ) || (
+          ownsContent(room,'post','root',id) && request.resource.data.status == 'deleted'
+          && request.resource.data.authorId == '' && request.resource.data.nationality == ''
+          && request.resource.data.title == '' && request.resource.data.body == '' && fresh(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','authorId','nationality','title','body','updatedAt'])
+          && !existsAfter(ownerPath(room,'post','root',id))
+        ) || (admin() && resource.data.status != 'deleted' && request.resource.data.status in ['visible','hidden']
+          && fresh(request.resource.data) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']));
+        allow delete: if false;
+        match /comments/{commentId} {
+          allow get: if (reader(room) && (admin() || get(/databases/$(database)/documents/rooms/$(room)/posts/$(id)).data.status in ['visible','deleted'])
+            && (resource.data.status == 'visible' || admin())) || ownsContent(room,'comment',id,commentId);
+          allow list: if reader(room) && request.query.limit <= 50
+            && (admin() || get(/databases/$(database)/documents/rooms/$(room)/posts/$(id)).data.status in ['visible','deleted'])
+            && (resource.data.status == 'visible' || admin());
+          allow create: if writer(room) && get(/databases/$(database)/documents/rooms/$(room)/posts/$(id)).data.status == 'visible'
+            && validContent(request.resource.data,'comment') && author(request.resource.data)
+            && request.resource.data.status == 'visible' && request.resource.data.createdAt == request.time
+            && pair(room,'comment',id,commentId) && throttled('comment',key(room,'comment',id,commentId));
+          allow update: if (writer(room) && ownsContent(room,'comment',id,commentId) && resource.data.status == 'visible'
+            && validContent(request.resource.data,'comment') && authorUnchanged(request.resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['body','updatedAt']))
+            || (admin() && request.resource.data.status in ['visible','hidden'] && fresh(request.resource.data)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']));
+          allow delete: if (ownsContent(room,'comment',id,commentId) || admin()) && !existsAfter(ownerPath(room,'comment',id,commentId));
+        }
+      }
+      match /messages/{id} {
+        allow get: if (reader(room) && (resource.data.status == 'visible' || admin())) || ownsContent(room,'message','root',id);
+        allow list: if reader(room) && request.query.limit <= 50 && (resource.data.status == 'visible' || admin());
+        allow create: if writer(room) && get(/databases/$(database)/documents/serviceConfig/public).data.chatEnabled == true
+          && validContent(request.resource.data,'message') && author(request.resource.data)
+          && request.resource.data.status == 'visible' && request.resource.data.createdAt == request.time
+          && pair(room,'message','root',id) && throttled('message',key(room,'message','root',id));
+        allow update: if admin() && request.resource.data.status in ['visible','hidden'] && fresh(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt']);
+        allow delete: if (ownsContent(room,'message','root',id) || admin()) && !existsAfter(ownerPath(room,'message','root',id));
+      }
+    }
+    match /contentOwners/{id} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/contentOwners/$(id)) || resource.data.ownerId == request.auth.uid || admin());
+      allow list: if signedIn() && (resource.data.ownerId == request.auth.uid || admin());
+      allow create: if writer(request.resource.data.roomId)
+        && request.resource.data.keys().hasAll(['ownerId','roomId','kind','parentId','contentId','createdAt'])
+        && request.resource.data.keys().hasOnly(['ownerId','roomId','kind','parentId','contentId','createdAt'])
+        && request.resource.data.kind in ['post','comment','message']
+        && request.resource.data.ownerId == request.auth.uid && request.resource.data.createdAt == request.time
+        && id == key(request.resource.data.roomId,request.resource.data.kind,
+          request.resource.data.parentId == '' ? 'root' : request.resource.data.parentId,request.resource.data.contentId)
+        && getAfter(contentPath(request.resource.data)).data.createdAt == request.time
+        && getAfter(contentPath(request.resource.data)).data.authorId == me().userId;
+      allow update: if false;
+      allow delete: if signedIn() && (resource.data.ownerId == request.auth.uid || admin())
+        && (!existsAfter(contentPath(resource.data))
+          || (resource.data.kind == 'post' && getAfter(contentPath(resource.data)).data.status == 'deleted'
+            && getAfter(contentPath(resource.data)).data.authorId == ''));
+    }
+    match /reports/{reportId} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/reports/$(reportId)) || resource.data.reporterId == request.auth.uid || admin());
+      allow list: if signedIn() && (resource.data.reporterId == request.auth.uid || admin());
+      allow create: if writer(request.resource.data.roomId)
+        && request.resource.data.keys().hasAll(['reporterId','roomId','kind','parentId','contentId','reason','details','status','createdAt','updatedAt'])
+        && request.resource.data.keys().hasOnly(['reporterId','roomId','kind','parentId','contentId','reason','details','status','createdAt','updatedAt'])
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.kind in ['post','comment','message']
+        && request.resource.data.reason in ['spam','harassment','personal_info','other']
+        && request.resource.data.details is string && request.resource.data.details.size() <= 1000
+        && request.resource.data.status == 'open' && fresh(request.resource.data) && request.resource.data.createdAt == request.time
+        && get(contentPath(request.resource.data)).data.status == 'visible'
+        && get(contentPath(request.resource.data)).data.authorId != me().userId
+        && reportId == request.auth.uid + '~' + key(request.resource.data.roomId,request.resource.data.kind,
+          request.resource.data.parentId == '' ? 'root' : request.resource.data.parentId,request.resource.data.contentId)
+        && throttled('report',reportId);
+      allow update: if admin() && request.resource.data.status in ['open','reviewed','closed'] && fresh(request.resource.data)
+        && request.resource.data.resolution is string && request.resource.data.resolution.size() <= 1000
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','resolution','updatedAt']);
+      allow delete: if owns(resource.data.reporterId) && deleting(request.auth.uid);
+    }
+    match /moderationEvents/{eventId} {
+      allow read: if admin();
+      allow create: if admin() && request.resource.data.keys().hasAll(['actorId','action','target','reason','createdAt'])
+        && request.resource.data.keys().hasOnly(['actorId','action','target','reason','createdAt'])
+        && request.resource.data.actorId == request.auth.uid && request.resource.data.createdAt == request.time
+        && request.resource.data.action in ['hide','restore','suspend','resume','report_close','pause']
+        && request.resource.data.target is string && request.resource.data.target.size() <= 250
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 1000;
+      allow update, delete: if false;
+    }
+    // No room aliases or anonymous identity mappings are used.
     match /{document=**} { allow read, write: if false; }
   }
 }

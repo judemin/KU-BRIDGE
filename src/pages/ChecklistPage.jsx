@@ -13,6 +13,7 @@ export default function ChecklistPage() {
     setChecked,
     setAudience,
     toggleCheck,
+    personalBusy,
   } = useApp();
   return (
     <section className="container page-section section narrow-page">
@@ -58,6 +59,7 @@ export default function ChecklistPage() {
           >
             <input
               type="checkbox"
+              disabled={personalBusy}
               checked={!!checked[checkAudience + ":" + key]}
               onChange={() => toggleCheck(key)}
             />
@@ -72,6 +74,7 @@ export default function ChecklistPage() {
       <div className="check-footer">
         <button
           className="outline"
+          disabled={personalBusy}
           onClick={() => {
             if (window.confirm(tx("checkReset") + "?"))
               setChecked((old) =>

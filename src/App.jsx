@@ -18,6 +18,8 @@ import { authService as defaultAuthService } from "./services/auth.js";
 import { useAuth } from "./hooks/useAuth.js";
 import { CHECK_ITEMS, ISSUE_CARDS, QUESTIONS } from "./config.js";
 import { usePersonalState } from "./hooks/usePersonalState.js";
+import { useSyncedPersonal } from "./hooks/useSyncedPersonal.js";
+import SyncNotice from "./components/SyncNotice.jsx";
 import { changeLocation, parseLocation, useLocation } from "./navigation.js";
 import { useRevealMotion } from "./motion.js";
 import Header from "./components/Header.jsx";
@@ -36,6 +38,8 @@ const HelpPage = lazy(() => import("./pages/HelpPage.jsx"));
 const ChecklistPage = lazy(() => import("./pages/ChecklistPage.jsx"));
 const AccountPage = lazy(() => import("./pages/AccountPage.jsx"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage.jsx"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage.jsx"));
+const AdminPage = lazy(() => import("./pages/AdminPage.jsx"));
 const PAGES = {
   home: HomePage,
   explore: ExplorePage,
@@ -44,6 +48,8 @@ const PAGES = {
   checklist: ChecklistPage,
   account: AccountPage,
   privacy: PrivacyPage,
+  community: CommunityPage,
+  admin: AdminPage,
   notFound: NotFoundPage,
 };
 
@@ -53,7 +59,12 @@ function MotionPage({ children, contentKey }) {
   return <div ref={ref}>{children}</div>;
 }
 
-export default function App({ authService = defaultAuthService }) {
+export default function App({
+  authService = defaultAuthService,
+  syncService,
+  communityApi,
+  moderationApi,
+}) {
   const auth = useAuth(authService);
   const location = useLocation();
   const route = useMemo(() => parseLocation(location), [location]);
@@ -63,8 +74,8 @@ export default function App({ authService = defaultAuthService }) {
   );
   const lang = locale;
   const tx = (key) => translations[lang][key] || translations.en[key] || key;
-  const [saved, setSaved] = usePersonalState("saved", []);
-  const [checked, setChecked] = usePersonalState("checked", {});
+  const personal = useSyncedPersonal(auth, syncService);
+  const { saved, setSaved, checked, setChecked } = personal;
   const [preferredAudience, setPreferredAudience] = usePersonalState(
     "audience",
     "all",
@@ -169,6 +180,8 @@ export default function App({ authService = defaultAuthService }) {
       saved: "navSaved",
       account: "authAccount",
       privacy: "authPrivacy",
+      community: "community",
+      admin: "adminTitle",
       notFound: "notFoundTitle",
     }[page];
     document.title = "KU Bridge — " + tx(label);
@@ -214,6 +227,9 @@ export default function App({ authService = defaultAuthService }) {
     clearFilters: () => changeLocation(page, {}, { replace: true }),
     auth,
     authService,
+    ...personal,
+    communityApi,
+    moderationApi,
   };
   return (
     <AppContext.Provider value={value}>
@@ -224,6 +240,7 @@ export default function App({ authService = defaultAuthService }) {
           {tx("skipContent")}
         </a>
         <main id="main-content" key={page}>
+          <SyncNotice />
           <ErrorBoundary
             key={page}
             tx={tx}

@@ -217,6 +217,8 @@ test("account forms and recovery states", async (t) => {
     await t.test(
       "signup validates confirmation and acknowledgment before creating an account",
       async () => {
+        await input("userId", "bridge_test");
+        await select("nationality", "VN");
         await input("email", "student@example.test");
         await input("password", "Password123!");
         await input("confirmation", "different");
@@ -234,10 +236,10 @@ test("account forms and recovery states", async (t) => {
         assert.equal(calls.length, 0);
         await click(document.querySelector('main input[type="checkbox"]'));
         await select("studentType", "g");
-        await select("preferredRoom", "country-vn");
+        await select("preferredRoom", "anglophone");
         await submit();
         assert.equal(calls[0][0], "register");
-        assert.equal(calls[0][1].preferences.preferredRoom, "country-vn");
+        assert.equal(calls[0][1].preferences.preferredRoom, "anglophone");
         assert.equal(
           document.querySelector("h1").textContent,
           copy.en.authAccount,
@@ -363,7 +365,7 @@ test("account forms and recovery states", async (t) => {
           document.querySelector("h1").textContent,
           copy.en.authPrivacy,
         );
-        assert.match(document.body.textContent, /private deletion record/);
+      assert.match(document.body.textContent, /Private deletion markers/);
       },
     );
     assert.deepEqual(errors, [], "no React runtime errors or warnings");

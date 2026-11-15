@@ -27,7 +27,7 @@ export async function getFirebaseAuthServices() {
         initializeApp(settings.config, "ku-bridge-web");
       const auth = getAuth(app);
       if (settings.useEmulators) {
-        connectAuthEmulator(auth, "http://127.0.0.1:9099", {
+        connectAuthEmulator(auth, "http://127.0.0.1:15999", {
           disableWarnings: true,
         });
       }
@@ -50,7 +50,7 @@ export async function getFirebaseServices() {
       );
       const db = getFirestore(services.app);
       if (getFirebaseStatus().useEmulators)
-        connectFirestoreEmulator(db, "127.0.0.1", 8080);
+        connectFirestoreEmulator(db, "127.0.0.1", 15808);
       return { ...services, db };
     })().catch((error) => {
       servicesPromise = undefined;

@@ -4,7 +4,7 @@ import { SOURCES, DETAILS } from "../services/catalog.js";
 import RouteIcon from "./RouteIcon.jsx";
 import { EmptyState } from "./States.jsx";
 export default function ResourceCards({ items }) {
-  const { tx, lang, saved, toggleSaved, setSelected, clearFilters } = useApp();
+  const { tx, lang, saved, toggleSaved, setSelected, clearFilters,personalBusy } = useApp();
   return items.length ? (
     <div className="resource-grid">
       {items.map((item) => (
@@ -19,6 +19,7 @@ export default function ResourceCards({ items }) {
                 "save-icon " + (saved.includes(item.id) ? "is-saved" : "")
               }
               onClick={() => toggleSaved(item.id)}
+              disabled={personalBusy}
               aria-label={
                 tx(saved.includes(item.id) ? "saved" : "save") +
                 " " +

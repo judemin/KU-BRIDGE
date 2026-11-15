@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { LANGUAGES } from "../config.js";
 import { useApp } from "../context.jsx";
 import RouteIcon from "./RouteIcon.jsx";
@@ -14,7 +14,10 @@ export default function Header() {
     setMobileMenu,
     setLocale,
     auth,
+    authService,
   } = useApp();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutFailed, setLogoutFailed] = useState(false);
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -43,7 +46,7 @@ export default function Header() {
             ["help", "navHelp"],
             ["checklist", "navChecklist"],
             ["saved", "navSaved"],
-            ["account", auth.user ? "authAccount" : "authLogin"],
+            ["community", "community"],
           ].map(([to, key]) => (
             <PageLink
               page={to}
@@ -84,6 +87,48 @@ export default function Header() {
               </option>
             ))}
           </select>
+        </div>
+        <div className="header-account">
+          <PageLink
+            page="account"
+            className={"account-entry " + (!auth.user ? "login-entry" : "")}
+            aria-label={tx(auth.user ? "authAccount" : "loginSignup")}
+            onNavigate={() => navigate("account")}
+          >
+            <RouteIcon name="user" size={19} />
+            <span>
+              {auth.user
+                ? auth.profile?.userId || tx("authAccount")
+                : tx("loginSignup")}
+            </span>
+          </PageLink>
+          {auth.user && (
+            <button
+              className="header-logout"
+              disabled={loggingOut}
+              aria-label={tx("authLogout")}
+              onClick={async () => {
+                setLoggingOut(true);
+                setLogoutFailed(false);
+                try {
+                  await authService.logout();
+                  navigate("home");
+                } catch {
+                  setLogoutFailed(true);
+                } finally {
+                  setLoggingOut(false);
+                }
+              }}
+            >
+              <RouteIcon name="logout" size={18} />
+              <span>{tx("authLogout")}</span>
+            </button>
+          )}
+          {logoutFailed && (
+            <span className="header-account-error" role="alert">
+              {tx("authErrorNetwork")}
+            </span>
+          )}
         </div>
         <button
           className="mobile-toggle"

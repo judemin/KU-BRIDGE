@@ -13,6 +13,10 @@ export default function PrivacyPage() {
           <p>{tx(`privacy${part}`)}</p>
         </section>
       ))}
+      <section>
+        <h2>{tx("communityRules")}</h2>
+        <p>{tx("rulesText")}</p>
+      </section>
       <PageLink page="account" className="auth-text-link">
         {tx("authAccount")}
       </PageLink>

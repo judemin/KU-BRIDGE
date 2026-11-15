@@ -4,7 +4,8 @@ import { RESOURCES, SOURCES, DETAILS } from "../services/catalog.js";
 import { sourceLink } from "./SourceLink.jsx";
 import RouteIcon from "./RouteIcon.jsx";
 export default function ResourceDialog() {
-  const { tx, lang, selected, setSelected, saved, toggleSaved } = useApp();
+  const { tx, lang, selected, setSelected, saved, toggleSaved, personalBusy } =
+    useApp();
   const dialogRef = useRef(null);
   const activeResource = RESOURCES.find((item) => item.id === selected);
   useEffect(() => {
@@ -116,6 +117,7 @@ export default function ResourceDialog() {
           )}
           <button
             className="outline"
+            disabled={personalBusy}
             onClick={() => toggleSaved(activeResource.id)}
           >
             <RouteIcon name="bookmark" size={17} />{" "}

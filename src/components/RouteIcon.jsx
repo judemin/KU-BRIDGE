@@ -55,6 +55,19 @@ export default function RouteIcon({ name = "arrow", size = 18 }) {
         <path d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     );
+  if (name === "user")
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+      </svg>
+    );
+  if (name === "logout")
+    return (
+      <svg {...common}>
+        <path d="M9 4H4v16h5M9 12h12m-4-4 4 4-4 4" />
+      </svg>
+    );
   return (
     <svg {...common}>
       <path d="M6 6l12 12M18 6 6 18" />

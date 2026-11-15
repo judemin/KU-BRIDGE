@@ -23,7 +23,7 @@ const child = spawn(
       ? []
       : [
           authTests
-            ? "node --test tests/auth/*.test.js"
+            ? "node --test --test-concurrency=1 tests/auth/*.test.js"
             : "node --test tests/firestore/*.test.js",
         ]),
   ],
