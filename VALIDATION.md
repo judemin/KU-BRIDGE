@@ -25,7 +25,15 @@ Firebase SDK 12.19.0, Firebase CLI 15.36.0, rules-unit-testing 5.0.2를 사용�
 
 PowerShell에서 규칙 배포 명령의 프로젝트 ID 인자가 전달되는지 확인했습니다. 프로젝트 ID 생략과 `demo-ku-bridge` 지정은 실제 배포를 시도하지 않고 종료 코드 1로 차단했습니다. 최종 빌드 후 로컬 미리보기의 다섯 페이지와 최신 JS·CSS 응답은 모두 HTTP 200이었습니다.
 
-Firebase CLI의 실제 프로젝트 접근이 없어 외부 계정 생성·실제 Firestore 생성·Auth 메일 발송·실제 규칙/인덱스 배포는 미수행입니다. 이 작업은 [설정 안내](docs/STAGE_2_SETUP.md)에 따라 계정 준비 후 이어갑니다. Emulator의 인덱스 검증은 실제 서비스의 인덱스 배포·생성 완료 확인을 대체하지 않습니다.
+사용자가 계정·프로젝트를 준비한 뒤 실제 Firebase `ku-bridge`에 Rules·인덱스 배포를 완료했습니다. 실제 DB는 `(default)`·`asia-northeast3`·Standard·무료 할당량 대상으로 확인했고 Billing 미연결도 확인했습니다. 이메일/비밀번호 인증 활성화, 이메일 링크 인증 비활성화, `localhost` 승인 도메인, `.env.local` 네 값과 실제 웹 앱 설정 일치를 읽기 전용 API로 확인했습니다. 공개된 Rules의 내용도 로컬 파일과 일치했습니다. 복합 인덱스 네 개(`posts`, `comments`, `messages`, `reports`)가 모두 `READY`인 것을 최종 조회로 확인했습니다.
+
+실제 Firebase SDK로 비로그인 상태에서 `serviceConfig/public` 조회가 서버까지 도달함을 확인했습니다. 현재 해당 설정 문서는 없어 기본적으로 후속 기능을 닫는 상태입니다. `users/deployment-read-probe` 읽기는 `permission-denied`로 거부됐습니다. 이 검증에서 계정·문서는 생성하지 않았습니다. Auth 메일 발송·실제 가입·로그인·타인 접근 전체 시나리오는 4단계에서 검증합니다.
+
+## 3단계 공개 호스팅 준비
+
+실제 Firebase 설정이 `ready`인 상태의 프로덕션 빌드를 통과했습니다. `public/_headers`가 `dist/_headers`로 복사됐고 최상위 `404.html`이 없어 Pages 기본 SPA 처리를 유지함을 확인했습니다. 보안 헤더와 해시 자산 장기 캐시를 준비했으며 실제 Cloudflare 응답 적용은 공개 배포 후 확인합니다.
+
+현재 연결 가능한 Browser가 없고 Cloudflare CLI 인증도 없어 Pages GitHub 연결·FE 공개 배포는 수행하지 않았습니다. 사용자 계정 가입과 Pages Git 연동은 별도 작업입니다. [3단계 안내](docs/STAGE_3_DEPLOY.md)에 빌드 설정·환경변수·고정 주소 등록 순서를 기록했습니다. HTTPS·공개 경로·자동 배포·PC/모바일 시각 검증은 남아 있습니다.
 
 ## React 상호작용 검증
 
