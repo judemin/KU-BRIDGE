@@ -5,15 +5,20 @@
 
 ## 확인한 결과
 
-- `npm test`: 19개 테스트 통과. 콘텐츠 테스트 5개, React 상호작용 시나리오 9개와 상위 테스트 1개, 모션 안전성 테스트 4개를 포함합니다.
+- `npm test`: 24개 테스트 통과. 콘텐츠 테스트 5개, React 상호작용 시나리오 14개와 상위 테스트 1개, 모션 안전성 테스트 4개를 포함합니다.
 - `npm run build`: 프로덕션 정적 빌드 성공. 결과물은 `dist/`입니다.
 - `npm audit`: 전체 의존성 취약점 0건. 기존 Vite 5를 6.4.6으로 갱신하고 package-lock.json을 추가했습니다.
 - `npm audit --omit=dev`: 배포 의존성 취약점 0건.
 - 개발 서버 `127.0.0.1:5173`: HTML, main.jsx, App.jsx, styles.css, data.js, i18n.js, storage.js 모두 HTTP 200. Vite가 개발용 CSS를 JS 모듈로 제공하는 것은 정상 동작입니다.
 - 프로덕션 미리보기 `127.0.0.1:5183`: HTML, 빌드된 JS, CSS, robots.txt 모두 HTTP 200.
+- 1단계 이후 `/`, `/guide?student=g&category=funding`, `/contacts?student=l&topic=askClasses`, `/my/checklist?student=g`, `/my/saved`와 알 수 없는 주소에서 SPA 진입 HTML 제공을 확인했습니다. 분리된 모든 페이지 JS 청크와 CSS도 HTTP 200입니다. 알 수 없는 주소의 404는 클라이언트 화면이며 서버의 HTTP 404 응답을 뜻하지 않습니다.
 - `git diff --check`: 변경 파일의 공백 오류 없음.
 
 ## React 상호작용 검증
+
+1단계 FE 구조 정리에서는 아래 기존 기능에 더해 URL 직접 진입·재마운트 후 선택 복원, 실제 History API의 뒤로·앞으로 이동, 실제 링크 주소, 404에서 홈 복귀, 잘못된 쿼리의 안전한 기본값, 페이지 오류와 복구 후 저장 데이터 보존을 추가 검사했습니다. 페이지별 지연 로딩을 완료한 뒤 DOM을 검사하며 테스트용 Vite는 HMR·WebSocket을 사용하지 않습니다.
+
+45개 안내 ID와 `data.js`·`details.js`·행정 문의 경로 데이터는 변경하지 않았습니다. 기존 화이트 테마·공식 사이트 색상·반응형·애니메이션을 보존하고 메뉴 버튼을 링크로 바꾸는 데 필요한 스타일과 공통 상태 화면 스타일만 추가했습니다. 네 언어 모두 학사·행정 접수·대행을 제공하지 않는다는 점을 명확히 했습니다.
 
 `tests/ui.test.js`는 JSDOM 환경에 실제 App 컴포넌트를 React StrictMode로 마운트합니다. Vite의 SSR 모듈 로더는 JSX를 읽는 용도로 사용하며, 검증은 React DOM 렌더링과 DOM 이벤트로 수행합니다.
 

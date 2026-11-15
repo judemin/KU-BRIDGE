@@ -1,5 +1,14 @@
 const PREFIX = "ku-bridge-independent-v1:";
 
+export function writeStorage(key, value) {
+  try {
+    localStorage.setItem(PREFIX + key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function readStorage(key, fallback) {
   try {
     const raw = localStorage.getItem(PREFIX + key);

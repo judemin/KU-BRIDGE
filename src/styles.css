@@ -120,7 +120,7 @@ select:focus-visible {
   justify-content: center;
   flex: 1;
 }
-.header-nav button {
+.header-nav :is(button, a) {
   min-height: 48px;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -130,12 +130,12 @@ select:focus-visible {
   font-size: 13px;
   white-space: nowrap;
 }
-.header-nav button.active {
+.header-nav :is(button, a).active {
   border-color: var(--green);
   color: var(--green);
   font-weight: 700;
 }
-.header-nav button:hover {
+.header-nav :is(button, a):hover {
   color: var(--green);
 }
 .nav-count {
@@ -1063,7 +1063,7 @@ select {
   .header-nav.open {
     display: flex;
   }
-  .header-nav button {
+  .header-nav :is(button, a) {
     text-align: left;
   }
   .mobile-toggle {
@@ -1341,6 +1341,38 @@ select {
     grid-template-columns: 1fr;
   }
 }
+.header-nav a {
+  display: inline-flex;
+  align-items: center;
+}
+.status-page h1 {
+  font-size: clamp(25px, 4vw, 34px);
+  letter-spacing: -0.8px;
+}
+.status-page p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.85;
+  margin-block: 16px 24px;
+}
+.status-page .outline {
+  margin: 10px 0 0 10px;
+}
+.loading-indicator {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: loading-turn 700ms linear infinite;
+}
+@keyframes loading-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Motion adds feedback without changing the established layout. */
 :root {
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1375,7 +1407,7 @@ select {
 .save-icon,
 .mobile-toggle,
 .modal-top button,
-.header-nav button,
+.header-nav :is(button, a),
 .language-buttons button,
 .quick-guide > button,
 .issue-card,

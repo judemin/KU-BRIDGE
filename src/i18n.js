@@ -52,7 +52,7 @@ path|공식 안내 경로|Official information path|官方信息入口|公式情
 historical|과거 모집 사례|Historical notice|往期公告|過去の募集案内
 verifyAlert|이 화면은 지원 자격이나 현재 모집 여부를 확정하지 않습니다. 최신 공식 공지를 확인하세요.|This page does not confirm your eligibility or current application availability. Check the latest official notices.|本页不确认个人资格或当前报名状态，请核对最新官方公告。|申請資格や現在の募集状況を確定するものではありません。最新の公式情報をご確認ください。
 askTitle|문의처 찾기|Find a contact office|查找咨询部门|問い合わせ先を探す
-askDesc|학생 유형과 문의 내용을 선택하세요. 연락할 부서와 문의할 때 쓸 문안을 확인할 수 있습니다.|Choose your student type and topic to find an office and a message you can use when contacting them.|选择学生类型和咨询主题，查看咨询部门及邮件示例。|学生区分と相談内容を選ぶと、問い合わせ先と文面の例を確認できます。
+askDesc|학생 유형과 문의 내용을 선택하면 참고할 부서와 문의 문안을 안내합니다. 문의는 해당 부서에 직접 보내 주세요. 이 사이트는 접수·전달·행정 처리를 하지 않습니다.|Choose your student type and topic to find an office and sample message. Contact the office directly; this site does not accept, forward or process requests.|选择学生类型和咨询主题，查看咨询部门及邮件示例。请直接联系相关部门，本站不受理、转交或代办手续。|学生区分と相談内容を選ぶと、窓口と文面の例を確認できます。連絡は各窓口へ直接お願いします。本サイトでは受付・転送・手続きの代行は行いません。
 askTopic|문의 내용|Question topic|咨询主题|相談内容
 askGo|문의 경로 확인|Show contact route|查看咨询路径|問い合わせ先を見る
 askPrimary|우선 문의처|Suggested first contact|建议首先联系|最初の相談先
@@ -100,7 +100,7 @@ checkL1|어학과정의 출석·수료 기준 확인|Check language program atte
 checkL2|체류 상태와 다음 과정 계획 점검|Review stay status and next study plans|核对居留状态及后续学习计划|在留資格と次の進路を確認
 trustTitle|학교 공지를 확인할 때|Reading university notices|查看学校公告时|大学のお知らせを確認するとき
 trustDesc|안내마다 공식 자료 링크와 자료 유형을 표시했습니다. 과거 모집 공지는 참고용이며, 현재 신청 일정은 해당 부서의 최신 공지를 확인해 주세요.|Each topic includes its university reference and information type. Past notices are for reference; check with the office for current application dates.|每个主题均附有学校资料链接及类型。往期公告仅供参考，当前申请时间请查看相关部门的最新公告。|各項目に大学の資料リンクと種類を記載しています。過去の募集は参考用です。現在の日程は担当部署の最新情報をご確認ください。
-footer|본 프로젝트는 건국대학교 공식 서비스를 대체하지 않습니다.|An independent project; not a replacement for university services.|本项目不能代替学校官方服务。|本プロジェクトは大学公式サービスに代わるものではありません。
+footer|건국대학교와 독립된 학생용 안내입니다. 학사·행정 업무를 접수하거나 대행하지 않습니다.|An independent student guide. We do not accept or process university administrative requests.|本网站为独立学生指南，不受理或代办学校教务及行政手续。|大学とは独立した学生向けガイドです。学務・行政手続きの受付や代行は行いません。
 viewAll|모든 자료로 이동|Browse all topics|浏览所有主题|すべてを見る
 close|닫기|Close|关闭|閉じる
 clear|검색 초기화|Clear search|清除搜索|検索をクリア
@@ -130,6 +130,12 @@ quickCheckDesc|학점·서류·졸업요건 확인|Keep track of credits and req
 savedDesc|저장한 안내를 다시 확인하세요. 이 브라우저에 보관됩니다.|Revisit your saved topics. They are stored in this browser.|查看收藏的信息。收藏保存在本浏览器。|保存した案内を確認できます。このブラウザに保存されます。
 copyFailed|자동 복사를 사용할 수 없습니다. 위 문안을 선택해 복사해 주세요.|Copy is unavailable. Select and copy the message above.|无法自动复制，请选择上方文字并复制。|自動コピーできません。上の文面を選択してコピーしてください。
 skipContent|본문으로 이동|Skip to content|跳至正文|本文へ移動
+loading|화면을 불러오는 중입니다.|Loading this page…|正在加载页面。|ページを読み込んでいます。
+notFoundTitle|페이지를 찾을 수 없습니다.|Page not found|找不到页面。|ページが見つかりません。
+notFoundDesc|주소를 확인하거나 홈에서 필요한 안내를 찾아보세요.|Check the address or return home to find the information you need.|请检查网址，或返回首页查找所需信息。|アドレスをご確認いただくか、ホームから案内をお探しください。
+errorTitle|화면을 불러오지 못했습니다.|This page could not be loaded|页面加载失败。|ページを読み込めませんでした。
+errorDesc|다시 시도하거나 홈으로 이동해 주세요. 저장한 기록은 초기화하지 않습니다.|Try again or return home. Your saved records will be kept.|请重试或返回首页，已保存的记录不会被重置。|再試行するかホームへ移動してください。保存した記録は削除されません。
+retry|다시 시도|Try again|重试|再試行
 `;
 const translations = { ko: {}, en: {}, zh: {}, ja: {} };
 for (const line of rows.trim().split("\n")) {

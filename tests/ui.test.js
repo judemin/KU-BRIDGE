@@ -42,12 +42,20 @@ test("React application interactions", async (t) => {
   const { createRoot } = await import("react-dom/client");
   let root;
   const prefix = "ku-bridge-independent-v1:";
+  const settle = async () => {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if (!document.querySelector('[aria-busy="true"]')) return;
+      await act(async () => new Promise((resolve) => setTimeout(resolve, 10)));
+    }
+    assert.fail("Page module did not finish loading");
+  };
   const click = async (element) => {
     assert.ok(element, "click target exists");
     await act(async () => element.click());
+    await settle();
   };
   const nav = async (index) =>
-    click(document.querySelectorAll(".header-nav button")[index]);
+    click(document.querySelectorAll(".header-nav a")[index]);
   const select = async (element, value) => {
     await act(async () => {
       element.value = value;
@@ -63,6 +71,7 @@ test("React application interactions", async (t) => {
           React.createElement(React.StrictMode, null, React.createElement(App)),
         ),
       );
+      await settle();
     };
     await mount();
 
@@ -294,6 +303,181 @@ test("React application interactions", async (t) => {
       await nav(3);
       assert.equal(document.querySelectorAll(".check-item").length, 7);
     });
+    const visit = async (path) => {
+      await act(async () => {
+        window.history.pushState(null, "", path);
+        window.dispatchEvent(new window.PopStateEvent("popstate"));
+      });
+      await settle();
+    };
+    await t.test(
+      "direct URLs and remounts restore guide filters, contact selections and checklist type",
+      async () => {
+        await visit("/guide?student=g&category=funding&q=장학");
+        const count = document.querySelectorAll(".resource-card").length;
+        assert.ok(count > 0 && count < 45);
+        await act(async () => root.unmount());
+        await mount();
+        assert.equal(document.querySelectorAll(".resource-card").length, count);
+        assert.equal(
+          document.querySelector(".search-wrap input").value,
+          "장학",
+        );
+        assert.equal(
+          document.querySelectorAll(".explore-filters select")[0].value,
+          "g",
+        );
+        assert.equal(
+          document.querySelectorAll(".explore-filters select")[1].value,
+          "funding",
+        );
+        await visit("/contacts?student=l&topic=askClasses");
+        await act(async () => root.unmount());
+        await mount();
+        assert.equal(
+          document.querySelector(".route-step h3").textContent,
+          translations.en.askLanguageSchool,
+        );
+        await visit("/my/checklist?student=g");
+        assert.equal(document.querySelectorAll(".check-item").length, 5);
+        await act(async () => root.unmount());
+        await mount();
+        assert.equal(
+          document.querySelector(".standalone-select select").value,
+          "g",
+        );
+        assert.equal(document.querySelectorAll(".check-item").length, 5);
+      },
+    );
+    await t.test(
+      "native back and forward navigation restore URLs and filters",
+      async () => {
+        await visit("/guide?q=장학&student=g");
+        await nav(2);
+        await select(
+          document.querySelectorAll(".help-form select")[1],
+          "askVisa",
+        );
+        const contactUrl = window.location.pathname + window.location.search;
+        const travel = async (method) => {
+          await act(
+            async () =>
+              new Promise((resolve) => {
+                window.addEventListener("popstate", resolve, { once: true });
+                window.history[method]();
+              }),
+          );
+          await settle();
+        };
+        await travel("back");
+        assert.equal(window.location.pathname, "/guide");
+        assert.equal(
+          document.querySelector(".search-wrap input").value,
+          "장학",
+        );
+        assert.equal(
+          document.querySelector(".explore-filters select").value,
+          "g",
+        );
+        await travel("forward");
+        assert.equal(
+          window.location.pathname + window.location.search,
+          contactUrl,
+        );
+        assert.equal(
+          document.querySelectorAll(".help-form select")[1].value,
+          "askVisa",
+        );
+      },
+    );
+    await t.test(
+      "menu links expose real addresses and unknown pages recover to home",
+      async () => {
+        assert.deepEqual(
+          [...document.querySelectorAll(".header-nav a")].map((link) =>
+            link.getAttribute("href"),
+          ),
+          ["/", "/guide", "/contacts", "/my/checklist", "/my/saved"],
+        );
+        await visit("/missing/page");
+        assert.equal(
+          document.querySelector("h1").textContent,
+          translations.en.notFoundTitle,
+        );
+        assert.ok(document.querySelector(".header-nav"));
+        await click(document.querySelector(".status-page a"));
+        assert.equal(window.location.pathname, "/");
+        assert.ok(document.querySelector(".hero-search"));
+      },
+    );
+    await t.test(
+      "invalid URL options fall back safely and empty saved pages remain empty",
+      async () => {
+        await visit(
+          "/guide?student=invalid&category=invalid&issue=invalid&detail=invalid",
+        );
+        assert.equal(document.querySelectorAll(".resource-card").length, 45);
+        assert.equal(document.querySelector("[role=dialog]"), null);
+        await visit("/my/saved");
+        assert.equal(document.querySelectorAll(".resource-card").length, 0);
+        await click(document.querySelector(".empty-state button"));
+        assert.equal(window.location.pathname, "/my/saved");
+        assert.equal(document.querySelectorAll(".resource-card").length, 0);
+      },
+    );
+    await t.test(
+      "page failure shows translated recovery without clearing stored records",
+      async () => {
+        const { ErrorBoundary } = await server.ssrLoadModule(
+          "/src/components/States.jsx",
+        );
+        await act(async () => root.unmount());
+        const records = JSON.stringify({ u: "preserve" });
+        localStorage.setItem(prefix + "checked", records);
+        root = createRoot(document.getElementById("root"));
+        let fail = true;
+        function FailingPage() {
+          if (fail) throw new Error("Test page load failure");
+          return React.createElement("p", null, "Recovered");
+        }
+        const collectErrors = console.error;
+        const expectedErrors = [];
+        console.error = (...args) =>
+          expectedErrors.push(args.map(String).join(" "));
+        try {
+          await act(async () =>
+            root.render(
+              React.createElement(
+                ErrorBoundary,
+                {
+                  tx: (key) => translations.en[key],
+                  onRetry: () => {
+                    fail = false;
+                  },
+                },
+                React.createElement(FailingPage),
+              ),
+            ),
+          );
+          assert.ok(document.querySelector("[role=alert]"));
+          assert.equal(
+            document.querySelector("h1").textContent,
+            translations.en.errorTitle,
+          );
+          assert.equal(localStorage.getItem(prefix + "checked"), records);
+          assert.ok(
+            expectedErrors.some((message) =>
+              message.includes("Test page load failure"),
+            ),
+          );
+          await click(document.querySelector("[role=alert] button"));
+          assert.equal(document.querySelector("[role=alert]"), null);
+          assert.equal(document.querySelector("p").textContent, "Recovered");
+        } finally {
+          console.error = collectErrors;
+        }
+      },
+    );
     assert.deepEqual(errors, [], "no React runtime errors or warnings");
   } finally {
     if (root) await act(async () => root.unmount());

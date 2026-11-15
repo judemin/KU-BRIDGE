@@ -17,7 +17,7 @@ npm run dev
 
 ## 현재 FE 구성과 수정 사항
 
-React 18 + Vite 기반 단일 페이지 앱이며 별도 서버 API 없이 동작합니다. `src/data.js`와 `src/details.js`에서 45개 안내를, `src/i18n.js`에서 네 언어의 문구를 관리합니다. 문의처와 문의 문안은 `src/routing.js`, 브라우저 저장 데이터의 형식 검사는 `src/storage.js`에서 처리합니다.
+React 18 + Vite 기반 단일 페이지 앱이며 별도 서버 API 없이 동작합니다. `src/data.js`와 `src/details.js`에서 45개 안내를, `src/i18n.js`에서 네 언어의 문구를 관리합니다. 문의처와 문의 문안은 `src/routing.js`, URL 이동은 `src/navigation.js`, 브라우저 저장은 `src/services/personalData.js`와 `src/storage.js`에서 처리합니다.
 
 화면은 OS 테마와 관계없이 화이트 모드로 고정했습니다. 네온 색상, 그라데이션, 떠 있는 장식 카드, 숫자 강조를 제거하고 검색·분야별 안내·문의처·체크리스트를 중심으로 재구성했습니다. 저장 화면에 남던 다른 화면의 필터와 잘못된 저장 데이터로 인한 오류를 수정하고, 상세 창의 키보드 포커스와 복사 실패 안내를 보완했습니다.
 
@@ -42,7 +42,25 @@ npm run preview
 npm test
 ```
 
-## 최종 Sites v3 요구사항 대응
+## 1단계: FE 구조 정리
+
+페이지와 공통 UI를 분리하고 페이지별 지연 로딩, 로딩·빈 결과·404·오류 복구 화면을 구성했습니다. 인증 모듈은 현재 `unconfigured` 상태이며 실제 로그인이나 DB 연결을 가장하지 않습니다. 현재 개인 기록은 이전과 동일한 localStorage 키를 사용합니다.
+
+| 화면 | 경로 | 주소에 보관하는 선택 |
+| --- | --- | --- |
+| 홈 | `/` | 상세 창 `detail` |
+| 학교생활 안내 | `/guide` | 검색 `q`, 학생 유형 `student`, 분야 `category`, 상황 추천 `issue`, 상세 창 `detail` |
+| 문의처 | `/contacts` | 학생 유형 `student`, 문의 주제 `topic` |
+| 개인 체크리스트 | `/my/checklist` | 학생 유형 `student` |
+| 저장 항목 | `/my/saved` | 검색·학생 유형·분야·상세 창 |
+
+메뉴는 실제 링크여서 새 탭 열기와 주소 복사가 가능합니다. 검색·선택 변경은 현재 주소를 갱신하고 화면 간 이동은 방문 기록을 추가하므로 뒤로·앞으로 이동과 새로고침에서 선택을 복원합니다. 예: `/guide?student=g&category=funding`, `/contacts?student=l&topic=askClasses`.
+
+이 단계에서 사용자가 반드시 해야 하는 수동 작업은 없습니다. 확인하려면 로컬 서버가 실행된 상태에서 위 주소를 열고 새로고침·뒤로 가기를 사용할 수 있습니다. 서버를 다시 시작할 경우 프로젝트 폴더에서 `npm ci` 후 `npm run dev`를 실행하고 표시된 주소를 엽니다. 프로덕션 로컬 미리보기는 `npm run build` 후 `node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5183 --strictPort`로 실행합니다. 이미 5183 서버가 실행 중이면 추가로 실행할 필요가 없습니다.
+
+Firebase·Cloudflare 계정 준비는 다음 2단계에서 진행합니다. 배포할 정적 호스팅은 SPA 경로를 `index.html`로 제공해야 합니다. 공개 서비스 설정과 배포 검증은 2·3단계의 작업입니다.
+
+## 기존 요구사항 대응
 
 | v3 요구사항 | 별도 React 재구현 |
 |---|---|
@@ -73,7 +91,14 @@ KU_Bridge_React_v2/
 ├── package.json
 ├── src/
 │   ├── main.jsx           React 진입점
-│   ├── App.jsx            인터페이스와 탐색 상호작용
+│   ├── App.jsx            공통 상태·라우트·페이지 조합
+│   ├── navigation.js      URL·쿼리·방문 기록 처리
+│   ├── context.jsx        공통 상태 접근
+│   ├── config.js          메뉴 언어·상황·체크리스트 구성
+│   ├── pages/             홈·안내·문의처·개인 체크리스트
+│   ├── components/        헤더·푸터·카드·상세 창·공통 상태 화면
+│   ├── hooks/             개인 저장 상태 훅
+│   ├── services/          정적 안내·개인 저장·미연결 인증 모듈
 │   ├── data.js            45개 주제와 공식 출처
 │   ├── details.js         45개 주제의 4개 언어 상세 설명과 다음 행동
 │   ├── i18n.js            4개 언어 화면 문구
@@ -82,6 +107,8 @@ KU_Bridge_React_v2/
 ├── public/robots.txt
 ├── tests/
 │   ├── content.test.js    데이터·언어·연락 경로 검사
+│   ├── ui.test.js         React 기능·URL·방문 기록·오류 복구 검사
+│   ├── motion.test.js     모션 안전성 검사
 │   ├── layout_fixture.html  CSS 반응형 테스트 전용 문서
 │   └── layout_390.png     CSS fixture 기준 모바일 샘플 화면
 ├── SOURCES.md             공식 출처 목록
@@ -94,5 +121,5 @@ KU_Bridge_React_v2/
 - 운영 환경에서 실시간 공지 자동 수집, 사용자 로그인, 신청 대행, 민원 접수, 행정 부서 이관은 지원하지 않습니다.
 - 체크리스트는 개인 기록 기능이며 대학의 졸업사정 결과와 무관합니다.
 - React 프로젝트를 수정하여 재배포하더라도 이전 Sites v3 사이트가 자동으로 업데이트되지는 않습니다.
-- 학교 정책과 지원사업은 변동될 수 있으므로 공식 출처와 각 학기 공지를 주기적으로 재검증해야 합니다.
+- 학교의 최신 자격·일정·정책은 이용자가 해당 공식 출처에서 직접 확인합니다. 운영자는 학사·행정 업무를 접수·대행하거나 공식 판단을 제공하지 않습니다.
 - 유학생 대상 인터뷰는 1건이며 전체 유학생에 대한 일반화 근거로 사용하지 않습니다.
