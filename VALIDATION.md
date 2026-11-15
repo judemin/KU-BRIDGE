@@ -5,14 +5,27 @@
 
 ## 확인한 결과
 
-- `npm test`: 24개 테스트 통과. 콘텐츠 테스트 5개, React 상호작용 시나리오 14개와 상위 테스트 1개, 모션 안전성 테스트 4개를 포함합니다.
+- `npm test`: 28개 테스트 통과. 기존 FE 테스트 24개와 Firebase 설정 안전성 테스트 4개를 포함합니다.
+- `npm run test:rules`: 실제 Firestore Emulator의 권한 테스트 15개 통과. 합계 43개 테스트 통과.
 - `npm run build`: 프로덕션 정적 빌드 성공. 결과물은 `dist/`입니다.
-- `npm audit`: 전체 의존성 취약점 0건. 기존 Vite 5를 6.4.6으로 갱신하고 package-lock.json을 추가했습니다.
+- `npm audit`: Firebase CLI 추가 후 개발 도구의 전이 의존성에 중간 등급 14건이 남아 있습니다. 강제 메이저 변경은 적용하지 않았으며, 이 CLI는 브라우저 번들에 포함하지 않습니다. 향후 CLI 업데이트 시 재검토가 필요합니다.
 - `npm audit --omit=dev`: 배포 의존성 취약점 0건.
 - 개발 서버 `127.0.0.1:5173`: HTML, main.jsx, App.jsx, styles.css, data.js, i18n.js, storage.js 모두 HTTP 200. Vite가 개발용 CSS를 JS 모듈로 제공하는 것은 정상 동작입니다.
 - 프로덕션 미리보기 `127.0.0.1:5183`: HTML, 빌드된 JS, CSS, robots.txt 모두 HTTP 200.
 - 1단계 이후 `/`, `/guide?student=g&category=funding`, `/contacts?student=l&topic=askClasses`, `/my/checklist?student=g`, `/my/saved`와 알 수 없는 주소에서 SPA 진입 HTML 제공을 확인했습니다. 분리된 모든 페이지 JS 청크와 CSS도 HTTP 200입니다. 알 수 없는 주소의 404는 클라이언트 화면이며 서버의 HTTP 404 응답을 뜻하지 않습니다.
 - `git diff --check`: 변경 파일의 공백 오류 없음.
+
+## 2단계 Firebase 검증
+
+Firebase SDK 12.19.0, Firebase CLI 15.36.0, rules-unit-testing 5.0.2를 사용했습니다. 최신 rules-unit-testing 6은 현재 Node 22와 호환되지 않아 5 계열을 선택했습니다. Firestore의 Node 전이 의존성인 gRPC는 같은 메이저의 보안 수정 버전 `^1.14.7`로 override하고 Emulator 검증을 다시 통과했습니다. 운영 의존성 보안 검사는 0건이며 개발 CLI의 중간 등급 잔존 항목은 위에 별도로 기록했습니다.
+
+규칙 테스트는 `demo-ku-bridge`·루프백 Emulator에서 실제 DB 요청의 허용/거부를 검사합니다. 비로그인·타인 데이터 접근·프로필 필드/역할 위조·관리자 문서 조작·회원 전체 조회·임의 하위 컬렉션·알 수 없는 북마크·잘못된 체크 항목/시각을 거부했습니다. 본인의 올바른 프로필·45개 북마크·학생 유형별 체크리스트 처리는 허용했습니다. 잠긴 커뮤니티와 비공개 작성자 연결은 일반 회원·운영자·위조 admin 클레임 모두 접근이 거부됐습니다.
+
+환경변수 테스트는 미설정·부분 설정·잘못된 값, 실제 프로젝트를 향한 Emulator 설정, 프로덕션의 Emulator 설정, 공개 환경변수의 관리자 비밀을 검사했습니다. 설정 검사는 값을 출력하지 않습니다. 미설정 FE 빌드와 로컬 안내는 계속 동작합니다.
+
+PowerShell에서 규칙 배포 명령의 프로젝트 ID 인자가 전달되는지 확인했습니다. 프로젝트 ID 생략과 `demo-ku-bridge` 지정은 실제 배포를 시도하지 않고 종료 코드 1로 차단했습니다. 최종 빌드 후 로컬 미리보기의 다섯 페이지와 최신 JS·CSS 응답은 모두 HTTP 200이었습니다.
+
+Firebase CLI의 실제 프로젝트 접근이 없어 외부 계정 생성·실제 Firestore 생성·Auth 메일 발송·실제 규칙/인덱스 배포는 미수행입니다. 이 작업은 [설정 안내](docs/STAGE_2_SETUP.md)에 따라 계정 준비 후 이어갑니다. Emulator의 인덱스 검증은 실제 서비스의 인덱스 배포·생성 완료 확인을 대체하지 않습니다.
 
 ## React 상호작용 검증
 

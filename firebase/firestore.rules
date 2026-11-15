@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function owns(uid) { return signedIn() && request.auth.uid == uid; }
+    function fresh(data) { return data.updatedAt == request.time; }
+    function validProfile(data) {
+      return data.keys().hasAll(['locale', 'studentType', 'preferredRoom', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['locale', 'studentType', 'preferredRoom', 'createdAt', 'updatedAt'])
+        && data.locale in ['en', 'ko', 'zh', 'ja']
+        && data.studentType in ['all', 'u', 'g', 'e', 'l']
+        && data.preferredRoom is string
+        && (data.preferredRoom == 'global' || data.preferredRoom.matches('^country-[a-z]{2}$'))
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+    function knownTopic(id) {
+      return id in [
+        'undergradApply', 'gradApply', 'documents', 'languageReq', 'admissionResult',
+        'tuitionFirst', 'certificateAdmission', 'visa', 'alien', 'address', 'insurance',
+        'emergency', 'dormApply', 'dormRules', 'campusMap', 'course', 'ecampus', 'syllabus',
+        'englishCourses', 'credits', 'grades', 'leave', 'academicWarning', 'writingClinic',
+        'studyMentor', 'studyCommunity', 'wein', 'topik', 'koreanHelper', 'exchangeProg',
+        'visitingProg', 'exchangeCourses', 'isv', 'ibuddy', 'cultural', 'exchangeFaq',
+        'gradChecklist', 'department', 'thesis', 'gksScholarship', 'intlScholarship',
+        'scholarshipChanges', 'tuitionSupport', 'certificate', 'future'
+      ];
+    }
+    function checklistKeys(type) {
+      return type == 'u' ? ['checkC1','checkC2','checkC3','checkC4','checkC5','checkC6','checkC7']
+        : type == 'g' ? ['checkG1','checkG2','checkG3','checkG4','checkG5']
+        : type == 'e' ? ['checkE1','checkE2','checkE3']
+        : type == 'l' ? ['checkL1','checkL2'] : [];
+    }
+    function validChecklist(type, data) {
+      return type in ['u','g','e','l']
+        && data.keys().hasAll(['completed','updatedAt'])
+        && data.keys().hasOnly(['completed','updatedAt'])
+        && data.completed is list
+        && data.completed.size() <= checklistKeys(type).size()
+        && data.completed.toSet().hasOnly(checklistKeys(type))
+        && data.completed.toSet().size() == data.completed.size()
+        && fresh(data);
+    }
+
+    match /users/{uid} {
+      allow get: if owns(uid);
+      allow list: if false;
+      allow create: if owns(uid) && validProfile(request.resource.data)
+        && fresh(request.resource.data) && request.resource.data.createdAt == request.time;
+      allow update: if owns(uid) && validProfile(request.resource.data)
+        && fresh(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+      // Account deletion must also clean up child documents; not a standalone client delete.
+      allow delete: if false;
+
+      match /saved/{topicId} {
+        allow read: if owns(uid);
+        allow create: if owns(uid) && knownTopic(topicId)
+          && request.resource.data.keys().hasAll(['createdAt'])
+          && request.resource.data.keys().hasOnly(['createdAt'])
+          && request.resource.data.createdAt == request.time;
+        allow update: if false;
+        allow delete: if owns(uid);
+      }
+      match /checklists/{type} {
+        allow read: if owns(uid);
+        allow create, update: if owns(uid) && validChecklist(type, request.resource.data);
+        allow delete: if owns(uid);
+      }
+      // Block lists and write counters are introduced with moderation in stage 6.
+      match /{unreleased=**} { allow read, write: if false; }
+    }
+
+    // Set only via a trusted administrative path, never from a browser.
+    match /admins/{uid} {
+      allow get: if owns(uid);
+      allow list, write: if false;
+    }
+    match /moderation/{uid} {
+      allow get: if owns(uid);
+      allow list, write: if false;
+    }
+    match /serviceConfig/public {
+      allow get: if true;
+      allow list, write: if false;
+    }
+
+    // Community, aliases, ownership mappings and reports remain closed until their
+    // individual feature stages include matching rules, moderation and abuse tests.
+    match /{document=**} { allow read, write: if false; }
+  }
+}
