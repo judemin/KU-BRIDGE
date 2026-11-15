@@ -9,7 +9,6 @@ import {
   validRoom,
   identityReady,
   countryName,
-  roomForCountry,
 } from "../communityConfig.js";
 
 function useVisible() {
@@ -173,10 +172,12 @@ function Comments({ room, post, service, blocked, canWrite }) {
     [error, setError] = useState(null),
     [editing, setEditing] = useState(null),
     [more, setMore] = useState(false),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [revision, setRevision] = useState(0);
   const cursor = useRef(null);
   useEffect(() => {
     setOlder([]);
+    cursor.current = null;
     return service.watchComments(
       auth.user.uid,
       room,
@@ -188,9 +189,9 @@ function Comments({ room, post, service, blocked, canWrite }) {
       },
       (err) => setError(communityErrorKey(err)),
     );
-  }, [room, post.id, auth.user.uid, service]);
+  }, [room, post.id, auth.user.uid, service, revision]);
   const all = [
-    ...new Map([...items, ...older].map((item) => [item.id, item])).values(),
+    ...new Map([...older, ...items].map((item) => [item.id, item])).values(),
   ].sort(
     (a, b) =>
       (a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0),
@@ -211,7 +212,10 @@ function Comments({ room, post, service, blocked, canWrite }) {
                 parent={post.id}
                 service={service}
                 initial={item}
-                onDone={() => setEditing(null)}
+                onDone={() => {
+                  setEditing(null);
+                  setRevision((value) => value + 1);
+                }}
                 onCancel={() => setEditing(null)}
               />
             ) : (
@@ -228,6 +232,7 @@ function Comments({ room, post, service, blocked, canWrite }) {
               own={auth.profile?.userId === item.authorId}
               service={service}
               blocked={false}
+              onChange={() => setRevision((value) => value + 1)}
               onEdit={canWrite ? () => setEditing(item.id) : undefined}
             />
           </article>
@@ -643,6 +648,14 @@ function ChatPanel({ room, service, blocked, canWrite, enabled }) {
                   own={item.authorId === auth.profile?.userId}
                   service={service}
                   blocked={false}
+                  onChange={
+                    item.authorId === auth.profile?.userId
+                      ? () =>
+                          setHistory((old) =>
+                            old.filter((row) => row.id !== item.id),
+                          )
+                      : undefined
+                  }
                 />
               </article>
             ))}

@@ -163,12 +163,18 @@ test("community keeps chat and drafts while navigating posts; room switches and 
     assert.equal(starts, 2);
     assert.equal(stops, 1);
     await act(async () => {
-      Object.defineProperty(document, "hidden", {configurable:true,value:true});
+      Object.defineProperty(document, "hidden", {
+        configurable: true,
+        value: true,
+      });
       document.dispatchEvent(new window.Event("visibilitychange"));
     });
     assert.equal(stops, 2);
     await act(async () => {
-      Object.defineProperty(document, "hidden", {configurable:true,value:false});
+      Object.defineProperty(document, "hidden", {
+        configurable: true,
+        value: false,
+      });
       document.dispatchEvent(new window.Event("visibilitychange"));
     });
     assert.equal(starts, 3);
