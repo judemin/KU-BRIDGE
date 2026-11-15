@@ -77,7 +77,7 @@ npm run test:rules
 
 ## 3단계: FE 공개 배포 준비
 
-공개 호스팅 설정과 사용자 작업 순서는 [3단계 배포 안내](docs/STAGE_3_DEPLOY.md)에 정리했습니다. Pages용 보안 헤더와 해시 자산 캐시는 `public/_headers`에서 관리합니다. 공개 URL·Git 자동 배포·실제 브라우저 검증은 Pages 연결 후 확인합니다.
+공개 사이트는 [ku-bridge.pages.dev](https://ku-bridge.pages.dev)입니다. GitHub의 Pages 빌드 성공과 공개 경로·JS/CSS·보안/캐시 헤더를 확인했고 Firebase Auth 승인 도메인도 등록했습니다. Pages용 헤더는 `public/_headers`에서 관리합니다. 실제 PC/모바일 브라우저 검증과 후속 push 자동 배포 확인은 남아 있습니다. 설정 재현은 [3단계 배포 안내](docs/STAGE_3_DEPLOY.md)를 확인하세요.
 
 ## 기존 요구사항 대응
 

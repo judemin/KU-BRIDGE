@@ -29,11 +29,15 @@ PowerShell에서 규칙 배포 명령의 프로젝트 ID 인자가 전달되는�
 
 실제 Firebase SDK로 비로그인 상태에서 `serviceConfig/public` 조회가 서버까지 도달함을 확인했습니다. 현재 해당 설정 문서는 없어 기본적으로 후속 기능을 닫는 상태입니다. `users/deployment-read-probe` 읽기는 `permission-denied`로 거부됐습니다. 이 검증에서 계정·문서는 생성하지 않았습니다. Auth 메일 발송·실제 가입·로그인·타인 접근 전체 시나리오는 4단계에서 검증합니다.
 
-## 3단계 공개 호스팅 준비
+## 3단계 공개 호스팅 검증
 
-실제 Firebase 설정이 `ready`인 상태의 프로덕션 빌드를 통과했습니다. `public/_headers`가 `dist/_headers`로 복사됐고 최상위 `404.html`이 없어 Pages 기본 SPA 처리를 유지함을 확인했습니다. 보안 헤더와 해시 자산 장기 캐시를 준비했으며 실제 Cloudflare 응답 적용은 공개 배포 후 확인합니다.
+실제 Firebase 설정이 `ready`인 상태의 프로덕션 빌드를 통과했습니다. 사용자가 Git 연동 Pages 프로젝트를 생성하고 `ca4445f42e147b755fe0cbe93d9f6a47be68f2b8`를 공개 배포했습니다. GitHub의 해당 커밋 `Cloudflare Pages` check-run이 `completed`·`success`임을 API로 확인했습니다. 공개 주소는 https://ku-bridge.pages.dev 입니다.
 
-현재 연결 가능한 Browser가 없고 Cloudflare CLI 인증도 없어 Pages GitHub 연결·FE 공개 배포는 수행하지 않았습니다. 사용자 계정 가입과 Pages Git 연동은 별도 작업입니다. [3단계 안내](docs/STAGE_3_DEPLOY.md)에 빌드 설정·환경변수·고정 주소 등록 순서를 기록했습니다. HTTPS·공개 경로·자동 배포·PC/모바일 시각 검증은 남아 있습니다.
+공개 주소의 `/`, `/guide?student=g&category=funding`, `/contacts`, `/my/checklist`, `/my/saved`, `/unknown-page-probe`는 HTTPS·HTTP 200·앱 진입 HTML을 반환했고 `robots.txt`도 정상 응답했습니다. 알 수 없는 주소는 서버 404가 아닌 SPA의 클라이언트 복구 화면 대상입니다. 배포된 JS 6개·CSS 1개는 MIME 형식이 올바르고 SHA-256이 로컬 빌드 파일과 모두 일치했습니다. 문자열 디코딩에 의존하지 않고 원본 바이트로 비교했습니다.
+
+실제 응답에서 `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`를 확인했고 HTML은 `public, max-age=0, must-revalidate`, 해시 자산은 `public, max-age=31536000, immutable` 캐시를 확인했습니다. Firebase Auth 승인 도메인에는 `ku-bridge.pages.dev`를 추가하고 기존 세 도메인이 보존됐음을 API로 다시 조회했습니다.
+
+연결 가능한 Browser가 없어 공개 URL의 화면 조작·콘솔 오류·PC/모바일 시각 검증은 수행하지 못했습니다. HTTP 검사와 로컬 DOM 테스트를 실제 브라우저 동작 검증으로 간주하지 않습니다. Git 연동 첫 배포는 확인했지만 후속 push가 새 배포를 만드는지 재검증은 남았습니다. [3단계 안내](docs/STAGE_3_DEPLOY.md)에 재현 순서를 기록했습니다.
 
 ## React 상호작용 검증
 

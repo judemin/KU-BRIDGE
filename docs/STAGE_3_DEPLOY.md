@@ -10,7 +10,7 @@
 - 실제 Firebase SDK의 비로그인 개인 데이터 조회 거부 확인. 테스트 문서·계정은 생성하지 않음.
 - FE는 회원·커뮤니티 UI를 제공하기 전까지 기존 안내·브라우저 저장만 제공.
 
-Cloudflare 계정 가입만으로 GitHub 자동 배포 연결이 만들어지지는 않습니다. 현재 자동 조작 가능한 브라우저·Cloudflare CLI 인증이 연결되어 있지 않아 아래 콘솔 작업은 사용자가 진행합니다. 공개 URL이 준비되면 나머지 HTTP·경로·배포 결과 검증을 이어갑니다.
+2026-11-15: 사용자가 Git 연동으로 `https://ku-bridge.pages.dev`에 첫 배포를 완료했습니다. GitHub Pages 체크 성공, 주요 경로·정적 파일·보안/캐시 헤더를 검증했고 Firebase 승인 도메인도 등록했습니다. 실제 브라우저 조작과 후속 push 자동 배포 확인은 남아 있습니다. 아래는 설정 재현을 위한 안내입니다.
 
 ## 1. 저장소 변경 반영
 
@@ -20,7 +20,7 @@ Cloudflare 계정 가입만으로 GitHub 자동 배포 연결이 만들어지지
 
 1. [Cloudflare 대시보드](https://dash.cloudflare.com/)에 로그인합니다.
 2. `Workers & Pages` → `Create application`으로 이동합니다.
-3. **Pages**를 선택합니다. Workers 생성 화면이라면 Pages 시작 링크나 탭으로 이동합니다.
+3. 생성 첫 화면 아래쪽의 **Looking to deploy Pages? → Get started**를 누릅니다. 현재 목록 화면에는 별도 Pages 탭이 없으며, 이 링크를 누르기 전에 저장소를 선택하면 Workers 생성으로 진행됩니다. Pages 직접 진입 링크는 `https://dash.cloudflare.com/?to=/:account/workers-and-pages/create/pages`입니다.
 4. `Import an existing Git repository` 또는 `Connect to Git`을 선택합니다. 파일 직접 업로드 방식은 사용하지 않습니다.
 5. GitHub 연결 화면에서 `judemin` 계정을 선택합니다.
 6. Cloudflare GitHub 앱 설치·권한 요청이 나오면 `Only select repositories`로 `KU-BRIDGE`만 선택해 허용합니다.
