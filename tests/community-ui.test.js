@@ -120,7 +120,9 @@ test("board, editor and chat use independent routes, flags and subscription life
   };
   const flush = async () => {
     for (let attempt = 0; attempt < 200; attempt++) {
-      await act(async () => { await new Promise(resolve => setTimeout(resolve, 25)); });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      });
       if (!document.querySelector('main [aria-busy="true"]')) return;
     }
     assert.fail("The page did not finish loading");
@@ -174,7 +176,10 @@ test("board, editor and chat use independent routes, flags and subscription life
       document.querySelector(".content-author").textContent,
       /Japan/,
     );
-    assert.match(document.querySelector(".country-flag").textContent, /🇯🇵/);
+    assert.equal(
+      document.querySelector("img.country-flag").getAttribute("src"),
+      "/flags/jp.svg",
+    );
     assert.ok(
       !document
         .querySelector(".community-page")
@@ -202,9 +207,11 @@ test("board, editor and chat use independent routes, flags and subscription life
     assert.equal(document.querySelector(".community-board"), null);
     assert.ok(document.querySelector(".community-chat"));
     assert.equal(starts, 1);
-    assert.match(
-      document.querySelector(".chat-message .country-flag").textContent,
-      /🇯🇵/,
+    assert.equal(
+      document
+        .querySelector(".chat-message img.country-flag")
+        .getAttribute("src"),
+      "/flags/jp.svg",
     );
     const input = document.querySelector("#chat-message-input");
     await act(async () => {

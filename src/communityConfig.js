@@ -59,11 +59,7 @@ export function validRoom(room) {
   return ROOM_IDS.includes(room);
 }
 export function countryFlag(code) {
-  return /^[A-Z]{2}$/.test(code || "")
-    ? String.fromCodePoint(
-        ...[...code].map((letter) => 127397 + letter.charCodeAt(0)),
-      )
-    : "";
+  return COUNTRY_CODES.includes(code) ? `/flags/${code.toLowerCase()}.svg` : "";
 }
 export function contentKey(room, kind, parent, id) {
   return [room, kind, parent || "root", id].join("~");

@@ -28,11 +28,15 @@ function Author({ item, lang, tx, showFlag = true }) {
       {item.nationality && (
         <span>
           {countryName(item.nationality, lang)}
-          {showFlag && (
-            <span className="country-flag" aria-hidden="true">
-              {" "}
-              {countryFlag(item.nationality)}
-            </span>
+          {showFlag && countryFlag(item.nationality) && (
+            <img
+              className="country-flag"
+              src={countryFlag(item.nationality)}
+              alt=""
+              aria-hidden="true"
+              width="20"
+              height="15"
+            />
           )}
         </span>
       )}

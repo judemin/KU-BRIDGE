@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { COUNTRY_CODES, countryFlag } from "../src/communityConfig.js";
 const base = new URL(process.argv[2] || "http://127.0.0.1:5183");
 if (!["http:", "https:"].includes(base.protocol))
   throw Error("HTTP(S) URL required");
@@ -42,4 +43,26 @@ for (const file of files) {
 }
 console.log(
   `Verified seven SPA routes and ${files.length} deployed assets against the local build at ${base.origin}`,
+);
+for (let offset = 0; offset < COUNTRY_CODES.length; offset += 8) {
+  await Promise.all(
+    COUNTRY_CODES.slice(offset, offset + 8).map(async (code) => {
+      const path = countryFlag(code);
+      const response = await fetch(new URL(path, base));
+      assert.equal(response.status, 200, path);
+      assert.match(
+        response.headers.get("content-type"),
+        /image\/svg\+xml/,
+        path,
+      );
+      const actual = Buffer.from(await response.arrayBuffer());
+      const expected = await readFile(
+        new URL(`../dist${path}`, import.meta.url),
+      );
+      assert.equal(hash(actual), hash(expected), path);
+    }),
+  );
+}
+console.log(
+  `Verified all ${COUNTRY_CODES.length} bundled SVG flags at ${base.origin}`,
 );
