@@ -14,7 +14,8 @@ import {
   RESOURCES,
   findTopics,
 } from "./services/catalog.js";
-import { getAuthState } from "./services/auth.js";
+import { authService as defaultAuthService } from "./services/auth.js";
+import { useAuth } from "./hooks/useAuth.js";
 import { CHECK_ITEMS, ISSUE_CARDS, QUESTIONS } from "./config.js";
 import { usePersonalState } from "./hooks/usePersonalState.js";
 import { changeLocation, parseLocation, useLocation } from "./navigation.js";
@@ -33,12 +34,16 @@ const HomePage = lazy(() => import("./pages/HomePage.jsx"));
 const ExplorePage = lazy(() => import("./pages/ExplorePage.jsx"));
 const HelpPage = lazy(() => import("./pages/HelpPage.jsx"));
 const ChecklistPage = lazy(() => import("./pages/ChecklistPage.jsx"));
+const AccountPage = lazy(() => import("./pages/AccountPage.jsx"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage.jsx"));
 const PAGES = {
   home: HomePage,
   explore: ExplorePage,
   saved: ExplorePage,
   help: HelpPage,
   checklist: ChecklistPage,
+  account: AccountPage,
+  privacy: PrivacyPage,
   notFound: NotFoundPage,
 };
 
@@ -48,7 +53,8 @@ function MotionPage({ children, contentKey }) {
   return <div ref={ref}>{children}</div>;
 }
 
-export default function App() {
+export default function App({ authService = defaultAuthService }) {
+  const auth = useAuth(authService);
   const location = useLocation();
   const route = useMemo(() => parseLocation(location), [location]);
   const { page, params } = route;
@@ -147,6 +153,13 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (auth.user && auth.profile) {
+      setLocale(auth.profile.locale);
+      setPreferredAudience(auth.profile.studentType);
+    }
+  }, [auth.user?.uid, auth.profile?.locale, auth.profile?.studentType]);
+
+  useEffect(() => {
     document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
     const label = {
       home: "brand",
@@ -154,6 +167,8 @@ export default function App() {
       help: "askTitle",
       checklist: "checkTitle",
       saved: "navSaved",
+      account: "authAccount",
+      privacy: "authPrivacy",
       notFound: "notFoundTitle",
     }[page];
     document.title = "KU Bridge — " + tx(label);
@@ -197,7 +212,8 @@ export default function App() {
     currentChecks,
     completion,
     clearFilters: () => changeLocation(page, {}, { replace: true }),
-    auth: getAuthState(),
+    auth,
+    authService,
   };
   return (
     <AppContext.Provider value={value}>

@@ -6,6 +6,8 @@ export const PAGE_PATHS = Object.freeze({
   help: "/contacts",
   checklist: "/my/checklist",
   saved: "/my/saved",
+  account: "/account",
+  privacy: "/privacy",
 });
 const LOCATION_EVENT = "ku-bridge:navigate";
 

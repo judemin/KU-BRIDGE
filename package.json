@@ -10,6 +10,7 @@
     "test": "node --test tests/*.test.js",
     "check": "npm run test",
     "test:rules": "node scripts/test-firestore.mjs",
+    "test:auth": "node scripts/test-firestore.mjs --auth",
     "firebase:check": "node scripts/check-firebase-config.mjs",
     "firebase:deploy-rules": "node scripts/deploy-firestore.mjs",
     "emulators": "node scripts/test-firestore.mjs --start"

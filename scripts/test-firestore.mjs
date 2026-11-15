@@ -5,9 +5,10 @@ import path from "node:path";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const cli = path.join(root, "node_modules/firebase-tools/lib/bin/firebase.js");
 const start = process.argv.length === 3 && process.argv[2] === "--start";
-if (process.argv.length > 2 && !start)
+const authTests = process.argv.length === 3 && process.argv[2] === "--auth";
+if (process.argv.length > 2 && !start && !authTests)
   throw new Error(
-    "Only --start is supported; project and loopback hosts are fixed in the local configuration",
+    "Only --start or --auth is supported; project and loopback hosts are fixed",
   );
 const child = spawn(
   process.execPath,
@@ -15,10 +16,16 @@ const child = spawn(
     cli,
     start ? "emulators:start" : "emulators:exec",
     "--only",
-    start ? "auth,firestore" : "firestore",
+    start || authTests ? "auth,firestore" : "firestore",
     "--project",
     "demo-ku-bridge",
-    ...(start ? [] : ["node --test tests/firestore/*.test.js"]),
+    ...(start
+      ? []
+      : [
+          authTests
+            ? "node --test tests/auth/*.test.js"
+            : "node --test tests/firestore/*.test.js",
+        ]),
   ],
   {
     cwd: root,
@@ -27,6 +34,16 @@ const child = spawn(
       ...process.env,
       CI: "true",
       FIREBASE_EMULATORS_PATH: path.join(root, ".cache/firebase/emulators"),
+      ...(process.platform === "win32"
+        ? {
+            JAVA_TOOL_OPTIONS: [
+              process.env.JAVA_TOOL_OPTIONS,
+              "-Djava.net.preferIPv4Stack=true",
+            ]
+              .filter(Boolean)
+              .join(" "),
+          }
+        : {}),
     },
   },
 );

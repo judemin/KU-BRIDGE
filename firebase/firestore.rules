@@ -3,6 +3,10 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function owns(uid) { return signedIn() && request.auth.uid == uid; }
+    function deleting(uid) { return exists(/databases/$(database)/documents/accountDeletions/$(uid)); }
+    function recentLogin() {
+      return signedIn() && request.auth.token.get('auth_time', 0) > request.time.toMillis() / 1000 - 300;
+    }
     function fresh(data) { return data.updatedAt == request.time; }
     function validProfile(data) {
       return data.keys().hasAll(['locale', 'studentType', 'preferredRoom', 'createdAt', 'updatedAt'])
@@ -45,17 +49,17 @@ service cloud.firestore {
     match /users/{uid} {
       allow get: if owns(uid);
       allow list: if false;
-      allow create: if owns(uid) && validProfile(request.resource.data)
+      allow create: if owns(uid) && !deleting(uid) && validProfile(request.resource.data)
         && fresh(request.resource.data) && request.resource.data.createdAt == request.time;
-      allow update: if owns(uid) && validProfile(request.resource.data)
+      allow update: if owns(uid) && !deleting(uid) && validProfile(request.resource.data)
         && fresh(request.resource.data)
         && request.resource.data.createdAt == resource.data.createdAt;
-      // Account deletion must also clean up child documents; not a standalone client delete.
-      allow delete: if false;
+      // The marker closes other tabs' writes before cleanup and Auth deletion.
+      allow delete: if owns(uid) && deleting(uid) && recentLogin();
 
       match /saved/{topicId} {
         allow read: if owns(uid);
-        allow create: if owns(uid) && knownTopic(topicId)
+        allow create: if owns(uid) && !deleting(uid) && knownTopic(topicId)
           && request.resource.data.keys().hasAll(['createdAt'])
           && request.resource.data.keys().hasOnly(['createdAt'])
           && request.resource.data.createdAt == request.time;
@@ -64,11 +68,21 @@ service cloud.firestore {
       }
       match /checklists/{type} {
         allow read: if owns(uid);
-        allow create, update: if owns(uid) && validChecklist(type, request.resource.data);
+        allow create, update: if owns(uid) && !deleting(uid) && validChecklist(type, request.resource.data);
         allow delete: if owns(uid);
       }
       // Block lists and write counters are introduced with moderation in stage 6.
       match /{unreleased=**} { allow read, write: if false; }
+    }
+
+    match /accountDeletions/{uid} {
+      allow get: if owns(uid);
+      allow create: if owns(uid) && recentLogin()
+        && !exists(/databases/$(database)/documents/admins/$(uid))
+        && !exists(/databases/$(database)/documents/moderation/$(uid))
+        && request.resource.data.keys().hasOnly(['requestedAt'])
+        && request.resource.data.requestedAt == request.time;
+      allow list, update, delete: if false;
     }
 
     // Set only via a trusted administrative path, never from a browser.

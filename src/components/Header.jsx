@@ -13,6 +13,7 @@ export default function Header() {
     mobileMenu,
     setMobileMenu,
     setLocale,
+    auth,
   } = useApp();
   return (
     <header className="site-header">
@@ -42,6 +43,7 @@ export default function Header() {
             ["help", "navHelp"],
             ["checklist", "navChecklist"],
             ["saved", "navSaved"],
+            ["account", auth.user ? "authAccount" : "authLogin"],
           ].map(([to, key]) => (
             <PageLink
               page={to}

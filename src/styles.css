@@ -550,6 +550,219 @@ select:focus-visible {
   color: var(--muted);
   padding-bottom: 4px;
 }
+.account-page {
+  max-width: 640px;
+}
+.account-heading {
+  margin-bottom: 28px;
+}
+.account-heading h1,
+.privacy-page h1 {
+  font-size: clamp(26px, 4vw, 36px);
+  margin-bottom: 12px;
+}
+.account-heading p,
+.account-panel p,
+.privacy-page p {
+  color: var(--muted);
+  line-height: 1.8;
+}
+.account-panel {
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--green);
+  padding: 28px;
+  margin-bottom: 24px;
+  background: #fff;
+}
+.account-panel h2 {
+  margin: 0 0 18px;
+  font-size: 20px;
+}
+.account-panel fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.account-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.account-panel :is(input:not([type="checkbox"]), select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid #b8c2bc;
+  border-radius: 3px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #121212;
+  font: inherit;
+  font-size: 16px;
+}
+.account-panel :is(input, select):focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+.account-panel .auth-checkbox {
+  flex-direction: row;
+  align-items: flex-start;
+  font-weight: 400;
+  line-height: 1.7;
+  margin-top: 18px;
+}
+.auth-checkbox input {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+  accent-color: var(--green);
+}
+.auth-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 11px 20px;
+  border: 1px solid var(--green);
+  border-radius: 3px;
+  background: var(--green);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.auth-button.secondary {
+  background: #fff;
+  color: var(--green);
+}
+.auth-button.danger {
+  background: #8c302a;
+  border-color: #8c302a;
+}
+.auth-text-link {
+  display: inline-block;
+  border: 0;
+  background: none;
+  color: var(--green);
+  padding: 12px 0;
+  min-height: 44px;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.auth-text-link.danger {
+  color: #8c302a;
+}
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0;
+}
+.auth-mode-links {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+.auth-mode-links button {
+  min-height: 46px;
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font: inherit;
+  color: var(--muted);
+  cursor: pointer;
+}
+.auth-mode-links button.active {
+  color: var(--green);
+  border-color: var(--green);
+  font-weight: 700;
+}
+.account-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.account-email {
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+.auth-badge {
+  color: #775519;
+  background: #faf5e9;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.auth-badge.verified {
+  color: var(--green);
+  background: #edf5ef;
+}
+.auth-feedback:empty {
+  display: none;
+}
+.auth-feedback {
+  border-left: 3px solid var(--green);
+  padding: 10px 16px;
+  margin: 0 0 20px;
+  background: #f3f7f4;
+  line-height: 1.7;
+}
+.auth-feedback p {
+  margin: 4px 0;
+}
+.auth-error {
+  border-left: 3px solid #8c302a;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  color: #732b26;
+  background: #fcf5f4;
+  line-height: 1.7;
+}
+.auth-hint {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0 0 20px;
+}
+.account-danger {
+  border-top-color: #ad8d89;
+}
+.account-panel :disabled,
+.auth-button:disabled,
+.auth-text-link:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.privacy-page {
+  max-width: 780px;
+}
+.privacy-page section {
+  margin: 32px 0;
+}
+.privacy-page h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+@media (max-width: 650px) {
+  .account-panel {
+    padding: 22px 18px;
+  }
+  .account-panel .auth-button {
+    width: 100%;
+  }
+  .auth-actions {
+    flex-direction: column;
+  }
+}
 .page-section {
   min-height: 65vh;
   padding-block: 60px 80px;
@@ -1027,6 +1240,13 @@ select {
 @media (max-width: 1220px) {
   .header-inner {
     gap: 18px;
+  }
+  .header-nav {
+    gap: 4px;
+  }
+  .header-nav :is(button, a) {
+    padding-inline: 7px;
+    font-size: 12px;
   }
   .language-buttons {
     display: none;

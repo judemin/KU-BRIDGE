@@ -36,6 +36,7 @@ test("React application interactions", async (t) => {
     originalError(...args);
   };
   const server = await createServer({
+    envDir: false,
     server: { middlewareMode: true, hmr: false, ws: false },
     appType: "custom",
   });
@@ -397,7 +398,7 @@ test("React application interactions", async (t) => {
           [...document.querySelectorAll(".header-nav a")].map((link) =>
             link.getAttribute("href"),
           ),
-          ["/", "/guide", "/contacts", "/my/checklist", "/my/saved"],
+          ["/", "/guide", "/contacts", "/my/checklist", "/my/saved", "/account"],
         );
         await visit("/missing/page");
         assert.equal(
