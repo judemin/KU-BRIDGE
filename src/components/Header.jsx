@@ -32,7 +32,7 @@ export default function Header() {
           </span>
           <span className="brand-title">
             <b>Bridge</b>
-            <small>KONKUK UNIVERSITY · SEOUL</small>
+            <small>KONKUK UNIVERSITY / SEOUL</small>
           </span>
         </PageLink>
         <nav
@@ -47,12 +47,21 @@ export default function Header() {
             ["checklist", "navChecklist"],
             ["saved", "navSaved"],
             ["community", "community"],
+            ["chat", "liveChat"],
           ].map(([to, key]) => (
             <PageLink
               page={to}
               key={to}
-              className={page === to ? "active" : ""}
-              aria-current={page === to ? "page" : undefined}
+              className={
+                (page === "postWrite" ? "community" : page) === to
+                  ? "active"
+                  : ""
+              }
+              aria-current={
+                (page === "postWrite" ? "community" : page) === to
+                  ? "page"
+                  : undefined
+              }
               onNavigate={() => navigate(to)}
             >
               {tx(key)}

@@ -254,7 +254,11 @@ export default function AccountPage() {
           !result.profileSaved && "authProfileMissing",
         );
         if (result.verificationSent) setCooldown(60);
-      } else await authService.login(email, password, lang);
+        navigate("home");
+      } else {
+        await authService.login(email, password, lang);
+        navigate("home");
+      }
     });
   }
   const messages = (
@@ -421,54 +425,65 @@ export default function AccountPage() {
               )}
             </section>
           )}
-          <p className="auth-hint">{tx("authLocalRecords")}</p>
-          {!auth.deletionPending && (
-            <button
-              className="auth-button secondary"
-              disabled={busy}
-              onClick={() =>
-                run(async () => {
-                  const uid = auth.user.uid;
-                  const content = await (
-                    communityApi || communityService
-                  ).exportOwn(uid);
-                  if (authService.getSnapshot().user?.uid !== uid) return;
-                  const data = {
-                    exportedAt: new Date().toISOString(),
-                    profile: auth.profile,
-                    saved,
-                    checked,
-                    content,
-                  };
-                  const url = URL.createObjectURL(
-                    new Blob([JSON.stringify(data, null, 2)], {
-                      type: "application/json",
-                    }),
-                  );
-                  const link = document.createElement("a");
-                  link.href = url;
-                  link.download = "ku-bridge-my-data.json";
-                  link.click();
-                  setTimeout(() => URL.revokeObjectURL(url), 1000);
-                  notice("exportDone");
-                })
-              }
-            >
-              {tx("exportData")}
-            </button>
-          )}
+          <section className="account-panel account-records">
+            <h2>{tx("accountRecordsTitle")}</h2>
+            <p>{tx("authLocalRecords")}</p>
+            <div className="account-record-actions">
+              {!auth.deletionPending && (
+                <button
+                  className="auth-button secondary"
+                  disabled={busy}
+                  onClick={() =>
+                    run(async () => {
+                      const uid = auth.user.uid;
+                      const content = await (
+                        communityApi || communityService
+                      ).exportOwn(uid);
+                      if (authService.getSnapshot().user?.uid !== uid) return;
+                      const data = {
+                        exportedAt: new Date().toISOString(),
+                        profile: auth.profile,
+                        saved,
+                        checked,
+                        content,
+                      };
+                      const url = URL.createObjectURL(
+                        new Blob([JSON.stringify(data, null, 2)], {
+                          type: "application/json",
+                        }),
+                      );
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = "ku-bridge-my-data.json";
+                      link.click();
+                      setTimeout(() => URL.revokeObjectURL(url), 1000);
+                      notice("exportDone");
+                    })
+                  }
+                >
+                  {tx("exportData")}
+                </button>
+              )}
 
+              <PageLink page="privacy" className="auth-button secondary">
+                {tx("authPrivacy")}
+              </PageLink>
+            </div>
+          </section>
           {auth.isAdmin && (
-            <PageLink page="admin" className="auth-button secondary">
-              {tx("adminTitle")}
-            </PageLink>
+            <section className="account-panel account-admin">
+              <div>
+                <h2>{tx("adminTitle")}</h2>
+                <p>{tx("adminAccountHint")}</p>
+              </div>
+              <PageLink page="admin" className="auth-button secondary">
+                {tx("openAdmin")}
+              </PageLink>
+            </section>
           )}
           <section className="account-panel account-danger">
-            <h2>{tx("authDelete")}</h2>
+            <h2>{tx("accountCloseTitle")}</h2>
             <p>{tx("authDeleteIntro")}</p>
-            <PageLink page="privacy" target="_blank" rel="noopener">
-              {tx("authPrivacy")}
-            </PageLink>
             {deleteOpen || auth.deletionPending ? (
               <form
                 onSubmit={(event) => {
@@ -533,7 +548,7 @@ export default function AccountPage() {
               </form>
             ) : (
               <button
-                className="auth-text-link danger"
+                className="auth-button danger-outline"
                 disabled={busy}
                 onClick={() => setDeleteOpen(true)}
               >

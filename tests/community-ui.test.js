@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { JSDOM } from "jsdom";
 import React, { act } from "react";
 import { createServer } from "vite";
-test("community keeps chat and drafts while navigating posts; room switches and logout clean subscriptions", async () => {
+test("board, editor and chat use independent routes, flags and subscription lifecycles", async () => {
   const dom = new JSDOM('<!doctype html><div id="root"></div>', {
     url: "http://localhost/community",
     pretendToBeVisual: true,
@@ -80,8 +80,19 @@ test("community keeps chat and drafts while navigating posts; room switches and 
       next([]);
       return () => {};
     },
-    async listPosts() {
-      return { items: [row], hasMore: false };
+    async listPosts(uid, room, cursor = 0) {
+      return {
+        items: Array.from(
+          { length: Math.min(10, 23 - cursor) },
+          (_, index) => ({
+            ...row,
+            id: `post-${cursor + index}`,
+            title: `A post to open ${cursor + index}`,
+          }),
+        ),
+        cursor: cursor + 10,
+        hasMore: cursor + 10 < 23,
+      };
     },
     watchMessages(uid, room, next) {
       starts++;
@@ -107,10 +118,13 @@ test("community keeps chat and drafts while navigating posts; room switches and 
       return () => {};
     },
   };
-  const flush = async () =>
-    act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 70));
-    });
+  const flush = async () => {
+    for (let attempt = 0; attempt < 200; attempt++) {
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 25)); });
+      if (!document.querySelector('main [aria-busy="true"]')) return;
+    }
+    assert.fail("The page did not finish loading");
+  };
   try {
     const { createRoot } = await import("react-dom/client");
     const { default: App } = await server.ssrLoadModule("/src/App.jsx");
@@ -128,33 +142,78 @@ test("community keeps chat and drafts while navigating posts; room switches and 
     await flush();
     assert.equal(document.querySelectorAll(".room-tabs button").length, 5);
     assert.ok(document.querySelector(".community-board"));
-    assert.ok(document.querySelector(".community-chat"));
-    assert.equal(starts, 1);
+    assert.equal(document.querySelectorAll(".post-row").length, 10);
+    const pageButtons = () =>
+      document.querySelectorAll(".pagination-direction");
+    assert.ok(pageButtons()[0].disabled);
+    await act(async () => pageButtons()[1].click());
+    await flush();
+    assert.equal(document.querySelectorAll(".post-row").length, 10);
+    assert.equal(
+      document.querySelector('.page-numbers [aria-current="page"]').textContent,
+      "2",
+    );
+    await act(async () => pageButtons()[1].click());
+    await flush();
+    assert.equal(document.querySelectorAll(".post-row").length, 3);
+    assert.ok(pageButtons()[1].disabled);
+    await act(async () => pageButtons()[0].click());
+    await flush();
+    assert.equal(document.querySelectorAll(".post-row").length, 10);
+    await act(async () =>
+      document.querySelector(".page-numbers button").click(),
+    );
+    await flush();
+    assert.equal(
+      document.querySelector('.page-numbers [aria-current="page"]').textContent,
+      "1",
+    );
+    assert.equal(document.querySelector(".community-chat"), null);
+    assert.equal(starts, 0);
+    assert.match(
+      document.querySelector(".content-author").textContent,
+      /Japan/,
+    );
+    assert.match(document.querySelector(".country-flag").textContent, /🇯🇵/);
     assert.ok(
       !document
         .querySelector(".community-page")
         .textContent.includes("private@example.test"),
     );
+    await act(async () =>
+      document.querySelector(".board-heading .auth-button").click(),
+    );
+    await flush();
+    assert.equal(window.location.pathname, "/community/new");
+    assert.ok(document.querySelector(".post-editor"));
+    assert.equal(document.querySelector(".post-list"), null);
+    assert.equal(starts, 0);
+    await act(async () => document.querySelector(".post-editor a").click());
+    await flush();
+    await act(async () => document.querySelector(".post-title").click());
+    await flush();
+    assert.ok(document.querySelector(".post-detail"));
+    assert.equal(starts, 0);
+    assert.equal(document.querySelector(".community-chat"), null);
+    await act(async () =>
+      document.querySelector('.header-nav a[href="/chat"]').click(),
+    );
+    await flush();
+    assert.equal(document.querySelector(".community-board"), null);
+    assert.ok(document.querySelector(".community-chat"));
+    assert.equal(starts, 1);
     assert.match(
-      document.querySelector(".community-chat").textContent,
-      /bob_ku/,
+      document.querySelector(".chat-message .country-flag").textContent,
+      /🇯🇵/,
     );
     const input = document.querySelector("#chat-message-input");
     await act(async () => {
       Object.getOwnPropertyDescriptor(
         window.HTMLTextAreaElement.prototype,
         "value",
-      ).set.call(input, "Draft must survive");
+      ).set.call(input, "Private draft");
       input.dispatchEvent(new window.Event("input", { bubbles: true }));
     });
-    await act(async () => document.querySelector(".post-title").click());
-    await flush();
-    assert.equal(
-      document.querySelector("#chat-message-input").value,
-      "Draft must survive",
-    );
-    assert.equal(starts, 1);
-    assert.match(window.location.search, /post=post-one/);
     await act(async () =>
       document.querySelectorAll(".room-tabs button")[3].click(),
     );
@@ -178,12 +237,21 @@ test("community keeps chat and drafts while navigating posts; room switches and 
       document.dispatchEvent(new window.Event("visibilitychange"));
     });
     assert.equal(starts, 3);
-    const logout = document.querySelector(".header-logout");
-    assert.ok(logout);
-    await act(async () => logout.click());
+    await act(async () =>
+      document.querySelector('.header-nav a[href="/community"]').click(),
+    );
     await flush();
     assert.equal(stops, 3);
-    assert.ok(document.querySelector(".header-account"));
+    assert.equal(document.querySelector(".community-chat"), null);
+    await act(async () =>
+      document.querySelector('.header-nav a[href="/chat"]').click(),
+    );
+    await flush();
+    assert.equal(starts, 4);
+    await act(async () => document.querySelector(".header-logout").click());
+    await flush();
+    assert.equal(stops, 4);
+    assert.equal(window.location.pathname, "/");
     assert.equal(document.querySelector(".header-logout"), null);
   } finally {
     if (root) await act(async () => root.unmount());

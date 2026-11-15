@@ -3,13 +3,22 @@ import { useApp } from "../context.jsx";
 import { RESOURCES } from "../services/catalog.js";
 import { ISSUE_CARDS } from "../config.js";
 import RouteIcon from "../components/RouteIcon.jsx";
+import PageLink from "../components/PageLink.jsx";
 import ResourceCards from "../components/ResourceCards.jsx";
 export default function HomePage() {
-  const { tx, navigate, chooseIssue } = useApp();
+  const { tx, navigate, chooseIssue, auth } = useApp();
   const [query, setQuery] = useState("");
   const renderCards = (items) => <ResourceCards items={items} />;
   return (
     <>
+      {auth.user && !auth.user.emailVerified && (
+        <div className="container home-account-notice" role="status">
+          <p>{tx("homeVerificationHint")}</p>
+          <PageLink page="account" className="auth-text-link">
+            {tx("authAccount")}
+          </PageLink>
+        </div>
+      )}
       <section className="hero container">
         <div className="hero-text">
           <p className="hero-label">{tx("heroEyebrow")}</p>

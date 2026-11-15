@@ -83,7 +83,7 @@ export default function ResourceDialog() {
           </div>
           <div>
             <small>{tx("studentType")}</small>
-            <p>{activeResource.audience.map((x) => tx(x)).join(" · ")}</p>
+            <p>{activeResource.audience.map((x) => tx(x)).join("  /  ")}</p>
           </div>
           <div>
             <small>{tx("sourceKind")}</small>
@@ -102,7 +102,7 @@ export default function ResourceDialog() {
           <div className="detail-section">
             <b>{tx("source")}</b>
             <p>
-              {SOURCES[activeResource.source].name} ·{" "}
+              {SOURCES[activeResource.source].name}  / {" "}
               {SOURCES[activeResource.source].date}
             </p>
             <p className="evidence-note">{tx(activeResource.kind)}</p>

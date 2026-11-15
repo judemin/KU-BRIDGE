@@ -17,6 +17,8 @@ for (const path of [
   "/account",
   "/privacy",
   "/community?room=country-jp",
+  "/community/new?room=country-jp",
+  "/chat?room=country-jp",
   "/admin",
 ]) {
   const response = await fetch(new URL(path, base));
@@ -39,5 +41,5 @@ for (const file of files) {
   assert.equal(hash(actual), hash(expected), file);
 }
 console.log(
-  `Verified five SPA routes and ${files.length} deployed assets against the local build at ${base.origin}`,
+  `Verified seven SPA routes and ${files.length} deployed assets against the local build at ${base.origin}`,
 );

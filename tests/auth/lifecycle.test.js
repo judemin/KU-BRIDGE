@@ -12,7 +12,7 @@ import { createAuthService } from "../../src/services/auth.js";
 
 const projectId = "demo-ku-bridge";
 for (const name of ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST"])
-  if (!/^(127\.0\.0\.1|localhost):\d+$/.test(process.env[name] || ""))
+  if (!/^(127\.0\.0\.1|localhost|\[::1\]):\d+$/.test(process.env[name] || ""))
     throw new Error(`Loopback ${name} is required; live Auth is forbidden`);
 const authBase = `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}`;
 const settings = {
@@ -48,7 +48,9 @@ const emailCode = async (email, type) => {
 };
 
 test("real Auth and Firestore account lifecycle", async (t) => {
-  const [host, port] = process.env.FIRESTORE_EMULATOR_HOST.split(":");
+  const endpoint = new URL(`http://${process.env.FIRESTORE_EMULATOR_HOST}`);
+  const host = endpoint.hostname,
+    port = endpoint.port;
   const env = await initializeTestEnvironment({
     projectId,
     firestore: {

@@ -30,7 +30,7 @@ const TOPICS = [
 ['undergradApply','administration','u','before','undergrad','direct','학부 외국인특별전형','Undergraduate international admission','本科留学生招生','本科外国人特別選考'],
 ['gradApply','administration','g','before','graduate','direct','대학원 외국인전형','Graduate international admission','研究生留学生招生','大学院留学生入試'],
 ['documents','administration','u,g','before','undergrad','direct','입학 서류 및 공증','Admission documents and legalization','入学材料与认证','入学書類と認証'],
-['languageReq','academics','u,g','before','undergrad','direct','입학 한국어·어학 요건','Admission language requirements','入学语言要求','出願時の語学要件'],
+['languageReq','academics','u,g','before','undergrad','direct','입학 한국어 / 어학 요건','Admission language requirements','入学语言要求','出願時の語学要件'],
 ['admissionResult','administration','u,g','before','undergrad','direct','합격 발표 및 확인','Admission results','录取结果查询','合格発表・確認'],
 ['tuitionFirst','funding','u,g','before','undergrad','direct','최초 등록금 납부','Initial tuition payment','首学期学费缴纳','初回学費の納付'],
 ['certificateAdmission','administration','u,g','arrival','undergrad','direct','표준입학허가서 안내','Certificate of Admission','标准入学许可书','標準入学許可書'],
@@ -58,7 +58,7 @@ const TOPICS = [
 ['koreanHelper','community','l','enrolled','fli','direct','한국어 연수생 헬퍼','Korean language learner helper','韩语研修生学伴','韓国語研修生ヘルパー'],
 ['exchangeProg','community','e','before','exchange','direct','교환학생 프로그램 안내','Exchange student program','交换生项目','交換留学プログラム'],
 ['visitingProg','community','e','before','visiting','direct','방문학생 프로그램 안내','Visiting student program','访问生项目','ビジティング留学'],
-['exchangeCourses','academics','e','arrival','exchangeGuide','direct','교환·방문학생 수강 안내','Exchange / visiting course registration','交换访问生选课','交換・ビジティング学生の履修'],
+['exchangeCourses','academics','e','arrival','exchangeGuide','direct','교환 / 방문학생 수강 안내','Exchange / visiting course registration','交换访问生选课','交換・ビジティング学生の履修'],
 ['isv','community','e','arrival','exchSupport','direct','국제학생 도우미(ISV)','International Student Volunteers','国际学生志愿者','国際学生ボランティア'],
 ['ibuddy','community','e','enrolled','buddy','direct','i-Buddy 교류 프로그램','i-Buddy connections','i-Buddy同伴项目','i-Buddy交流プログラム'],
 ['cultural','community','e','enrolled','exchSupport','direct','문화교류 행사','Cultural and exchange events','文化交流活动','文化交流イベント'],
@@ -69,9 +69,9 @@ const TOPICS = [
 ['gksScholarship','funding','u,g','enrolled','gks','direct','정부초청장학생(GKS) 안내','GKS scholarship guidance','GKS政府奖学金','GKS政府奨学金'],
 ['intlScholarship','funding','u','enrolled','rule','direct','우수외국인장학 규정','Outstanding international student scholarship','优秀留学生奖学金','優秀外国人奨学金'],
 ['scholarshipChanges','funding','u,g','enrolled','rule','direct','장학 규정 변경사항','Scholarship rule revisions','奖学金规定变更','奨学金規程の改定'],
-['tuitionSupport','funding','u,g','enrolled','guide','path','장학·등록금 지원 정보','Scholarship and tuition support','奖学金与学费支持','奨学金・学費支援'],
-['certificate','administration','u,g','graduating','guide','path','재학·성적·졸업 증명서','Enrollment, grade and graduation certificates','在读成绩毕业证明','在学・成績・卒業証明書'],
-['future','career','u,g','graduating','wein','path','진로·취업 프로그램 탐색','Explore career support','就业与职业规划支持','キャリア・就職支援']
+['tuitionSupport','funding','u,g','enrolled','guide','path','장학 / 등록금 지원 정보','Scholarship and tuition support','奖学金与学费支持','奨学金・学費支援'],
+['certificate','administration','u,g','graduating','guide','path','재학 / 성적 / 졸업 증명서','Enrollment, grade and graduation certificates','在读成绩毕业证明','在学・成績・卒業証明書'],
+['future','career','u,g','graduating','wein','path','진로 / 취업 프로그램 탐색','Explore career support','就业与职业规划支持','キャリア・就職支援']
 ];
 export const RESOURCES=TOPICS.map(([id,category,audience,stage,source,kind,ko,en,zh,ja])=>({
   id,category,audience:audience.split(','),stage,source,kind,title:{ko,en,zh,ja}

@@ -39,6 +39,8 @@ const ChecklistPage = lazy(() => import("./pages/ChecklistPage.jsx"));
 const AccountPage = lazy(() => import("./pages/AccountPage.jsx"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage.jsx"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage.jsx"));
+const ChatPage = lazy(() => import("./pages/ChatPage.jsx"));
+const PostWritePage = lazy(() => import("./pages/PostWritePage.jsx"));
 const AdminPage = lazy(() => import("./pages/AdminPage.jsx"));
 const PAGES = {
   home: HomePage,
@@ -49,6 +51,8 @@ const PAGES = {
   account: AccountPage,
   privacy: PrivacyPage,
   community: CommunityPage,
+  chat: ChatPage,
+  postWrite: PostWritePage,
   admin: AdminPage,
   notFound: NotFoundPage,
 };
@@ -181,6 +185,8 @@ export default function App({
       account: "authAccount",
       privacy: "authPrivacy",
       community: "community",
+      chat: "liveChat",
+      postWrite: "writePost",
       admin: "adminTitle",
       notFound: "notFoundTitle",
     }[page];
@@ -189,7 +195,7 @@ export default function App({
   useEffect(() => {
     setMobileMenu(false);
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, [route.pathname]);
+  }, [route.pathname, route.params.get("post")]);
 
   const value = {
     tx,

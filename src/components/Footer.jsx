@@ -21,7 +21,7 @@ export default function Footer() {
           {sourceLink("main", "Konkuk University")}
         </div>
       </div>
-      <div className="container footer-last">KU Bridge · {tx("subbrand")}</div>
+      <div className="container footer-last">KU Bridge  /  {tx("subbrand")}</div>
     </footer>
   );
 }

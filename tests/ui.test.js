@@ -398,7 +398,7 @@ test("React application interactions", async (t) => {
           [...document.querySelectorAll(".header-nav a")].map((link) =>
             link.getAttribute("href"),
           ),
-          ["/", "/guide", "/contacts", "/my/checklist", "/my/saved", "/community"],
+          ["/", "/guide", "/contacts", "/my/checklist", "/my/saved", "/community", "/chat"],
         );
         await visit("/missing/page");
         assert.equal(

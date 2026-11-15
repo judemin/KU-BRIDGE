@@ -39,7 +39,7 @@ function ReportCard({ report, service, onChange }) {
   return (
     <article className="moderation-card">
       <h3>
-        {tx(`report_${report.reason}`)} · {tx(`room_${report.roomId}`)}
+        {tx(`report_${report.reason}`)}  /  {tx(`room_${report.roomId}`)}
       </h3>
       <p>{report.details}</p>
       {target ? (

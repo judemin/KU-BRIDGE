@@ -19,7 +19,7 @@ import { ROOM_IDS, contentKey } from "../../src/communityConfig.js";
 const projectId = "demo-ku-bridge",
   password = "Correct-Password-123!";
 for (const name of ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST"])
-  if (!/^(127\.0\.0\.1|localhost):\d+$/.test(process.env[name] || ""))
+  if (!/^(127\.0\.0\.1|localhost|\[::1\]):\d+$/.test(process.env[name] || ""))
     throw Error("Only loopback emulators are allowed");
 const authBase = `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}`;
 async function eventually(condition) {
@@ -30,7 +30,9 @@ async function eventually(condition) {
   assert.fail("Snapshot did not settle");
 }
 test("identified community, moderation, synchronization and deletion with real SDK clients", async (t) => {
-  const [host, port] = process.env.FIRESTORE_EMULATOR_HOST.split(":");
+  const endpoint = new URL(`http://${process.env.FIRESTORE_EMULATOR_HOST}`);
+  const host = endpoint.hostname,
+    port = endpoint.port;
   const env = await initializeTestEnvironment({
     projectId,
     firestore: {
@@ -514,6 +516,67 @@ test("identified community, moderation, synchronization and deletion with real S
         await assertFails(
           d.getDocs(d.collection(bob.db, "users", alice.uid, "saved")),
         );
+      },
+    );
+    await t.test(
+      "post pagination returns ten items and detects the final page without an empty extra page",
+      async () => {
+        await trusted(async (db) => {
+          const batch = d.writeBatch(db);
+          for (let i = 0; i < 23; i++)
+            batch.set(d.doc(db, "rooms/country-jp/posts", `page-${i}`), {
+              authorId: "bob_ku",
+              nationality: "JP",
+              title: `Page fixture ${i}`,
+              body: "Pagination fixture",
+              category: "general",
+              status: "visible",
+              createdAt: d.Timestamp.fromMillis(1700000000000 + i),
+              updatedAt: d.Timestamp.fromMillis(1700000000000 + i),
+            });
+          await batch.commit();
+        });
+        const first = await bob.community.listPosts(bob.uid, "country-jp");
+        const second = await bob.community.listPosts(
+          bob.uid,
+          "country-jp",
+          first.cursor,
+        );
+        const third = await bob.community.listPosts(
+          bob.uid,
+          "country-jp",
+          second.cursor,
+        );
+        assert.deepEqual(
+          [first.items.length, second.items.length, third.items.length],
+          [10, 10, 3],
+        );
+        assert.deepEqual(
+          [first.hasMore, second.hasMore, third.hasMore],
+          [true, true, false],
+        );
+        assert.equal(
+          new Set(
+            [...first.items, ...second.items, ...third.items].map(
+              (item) => item.id,
+            ),
+          ).size,
+          23,
+        );
+        await trusted(async (db) => {
+          const batch = d.writeBatch(db);
+          for (let i = 0; i < 3; i++)
+            batch.delete(d.doc(db, "rooms/country-jp/posts", `page-${i}`));
+          await batch.commit();
+        });
+        const exactFirst = await bob.community.listPosts(bob.uid, "country-jp");
+        const exactLast = await bob.community.listPosts(
+          bob.uid,
+          "country-jp",
+          exactFirst.cursor,
+        );
+        assert.equal(exactLast.items.length, 10);
+        assert.equal(exactLast.hasMore, false);
       },
     );
     await t.test(

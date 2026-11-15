@@ -62,7 +62,8 @@ test("account forms and recovery states", async (t) => {
     preferredRoom: "country-vn",
   };
   let resetResolve,
-    deleteFails = false;
+    deleteFails = false,
+    loginSucceeds = false;
   const service = {
     getSnapshot: () => state,
     subscribe(fn) {
@@ -80,6 +81,15 @@ test("account forms and recovery states", async (t) => {
       return { profileSaved: true, verificationSent: true };
     },
     async login() {
+      if (loginSucceeds) {
+        set({
+          status: "authenticated",
+          user: { ...user, emailVerified: true },
+          profile: preferences,
+          profileStatus: "ready",
+        });
+        return;
+      }
       throw Object.assign(new Error("secret raw provider error"), {
         code: "auth/invalid-credential",
       });
@@ -240,14 +250,12 @@ test("account forms and recovery states", async (t) => {
         await submit();
         assert.equal(calls[0][0], "register");
         assert.equal(calls[0][1].preferences.preferredRoom, "anglophone");
+        assert.equal(window.location.pathname, "/");
         assert.equal(
           document.querySelector("h1").textContent,
-          copy.en.authAccount,
+          copy.en.heroTitle,
         );
-        assert.match(
-          document.querySelector('[role="status"]').textContent,
-          /Verification email sent/,
-        );
+        assert.ok(document.querySelector(".home-account-notice"));
         assert.equal(document.querySelector('[name="password"]'), null);
       },
     );
@@ -255,6 +263,7 @@ test("account forms and recovery states", async (t) => {
       "verification refresh, preference save and logout preserve guest records",
       async () => {
         localStorage.setItem("ku-bridge-independent-v1:saved", '["visa"]');
+        await click(document.querySelector(".header-account a"));
         await click(button(copy.en.authCheckVerification));
         assert.equal(
           document.querySelector(".auth-badge").textContent,
@@ -267,7 +276,7 @@ test("account forms and recovery states", async (t) => {
         await click(button(copy.en.authLogout));
         assert.equal(
           document.querySelector("h1").textContent,
-          copy.en.authRegister,
+          copy.en.authLogin,
         );
         assert.equal(
           localStorage.getItem("ku-bridge-independent-v1:saved"),
@@ -288,6 +297,29 @@ test("account forms and recovery states", async (t) => {
         );
         assert.ok(!document.body.textContent.includes("secret raw"));
         assert.equal(document.querySelector('[name="password"]').value, "");
+      },
+    );
+    await t.test(
+      "successful login opens home and account record actions remain separate",
+      async () => {
+        loginSucceeds = true;
+        await input("email", "student@example.test");
+        await input("password", "Password123!");
+        await submit();
+        assert.equal(window.location.pathname, "/");
+        await click(document.querySelector(".header-account a"));
+        assert.ok(document.querySelector(".account-records"));
+        assert.ok(
+          document.querySelector('.account-record-actions a[href="/privacy"]'),
+        );
+        assert.ok(document.querySelector(".account-danger .danger-outline"));
+        assert.equal(
+          document.querySelector('.account-danger a[href="/privacy"]'),
+          null,
+        );
+        await click(document.querySelector(".header-logout"));
+        await click(document.querySelector(".header-account a"));
+        loginSucceeds = false;
       },
     );
     await t.test(
@@ -344,7 +376,7 @@ test("account forms and recovery states", async (t) => {
           document.querySelector('[name="deletePassword"]').value,
           "",
         );
-        deleteFails = false;
+        ((deleteFails = false), (loginSucceeds = false));
         await input("deletePassword", "Password123!");
         await submit(document.querySelector(".account-danger form"));
         assert.ok(document.body.textContent.includes(copy.en.authDeleted));
@@ -365,7 +397,7 @@ test("account forms and recovery states", async (t) => {
           document.querySelector("h1").textContent,
           copy.en.authPrivacy,
         );
-      assert.match(document.body.textContent, /Private deletion markers/);
+        assert.match(document.body.textContent, /Private deletion markers/);
       },
     );
     assert.deepEqual(errors, [], "no React runtime errors or warnings");

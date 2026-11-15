@@ -31,13 +31,13 @@ studyCommunity|함께 공부하는 비교과 학습공동체 프로그램을 공
 wein|WE人은 교내 비교과 활동을 탐색할 수 있는 경로입니다. 개별 프로그램의 대상을 확인하세요.|WE人 provides a route to extracurricular opportunities; check each program's criteria.|WE人平台提供课外活动信息，需逐项核对参加条件。|WE人から課外プログラムを探せます。各募集の参加資格を確認します。
 topik|TOPIK 관련 공지와 언어 기준은 입학, 장학 또는 졸업에서 각각 다르게 적용될 수 있습니다.|TOPIK rules may differ for admission, scholarships and graduation.|TOPIK要求在入学、奖学金及毕业环节可能不同。|TOPIKの条件は入試、奨学金、卒業で異なる場合があります。
 koreanHelper|어학연수생의 한국어 학습과 캠퍼스 적응을 돕는 헬퍼 활동 안내입니다.|Explore helper activities supporting language students with Korean learning and campus adjustment.|了解面向语言研修生的韩语学习和校园适应帮助项目。|語学研修生の韓国語学習や大学生活への適応を支援するヘルパー案内です。
-exchangeProg|건국대학교 교환학생의 파견·수학 조건과 국제처 안내를 확인합니다.|Check the exchange program's eligibility, nominated-student process and office guidance.|核对交换项目资格、提名流程及国际处安排。|交換留学制度の資格、推薦手続き、国際交流担当の案内を確認します。
+exchangeProg|건국대학교 교환학생의 파견 / 수학 조건과 국제처 안내를 확인합니다.|Check the exchange program's eligibility, nominated-student process and office guidance.|核对交换项目资格、提名流程及国际处安排。|交換留学制度の資格、推薦手続き、国際交流担当の案内を確認します。
 visitingProg|교환학생과 방문학생의 등록 절차와 비용 등은 서로 다를 수 있습니다.|Visiting students may follow procedures and fees different from exchange students.|访问生与交换生的入学程序和费用可能不同。|ビジティング学生は交換留学生とは手続きや費用が異なる場合があります。
-exchangeCourses|교환·방문학생의 수강 가능 과목과 신청 일정은 국제처 가이드로 확인하세요.|Use OIA guidance to check available courses and registration rules for visiting students.|通过国际处指南查看交换及访问生选课范围和时间。|交換・ビジティング学生の履修対象と日程を国際交流案内で確認します。
-isv|교환·방문학생의 초기 적응을 돕는 국제학생 도우미 활동을 확인합니다.|Student volunteers may help exchange and visiting students settle in.|国际学生志愿者可协助交换及访问生适应校园生活。|交換・ビジティング学生の適応を助ける学生ボランティア案内です。
+exchangeCourses|교환 / 방문학생의 수강 가능 과목과 신청 일정은 국제처 가이드로 확인하세요.|Use OIA guidance to check available courses and registration rules for visiting students.|通过国际处指南查看交换及访问生选课范围和时间。|交換・ビジティング学生の履修対象と日程を国際交流案内で確認します。
+isv|교환 / 방문학생의 초기 적응을 돕는 국제학생 도우미 활동을 확인합니다.|Student volunteers may help exchange and visiting students settle in.|国际学生志愿者可协助交换及访问生适应校园生活。|交換・ビジティング学生の適応を助ける学生ボランティア案内です。
 ibuddy|i-Buddy는 국제교류 관련 교류 기회를 소개하는 프로그램입니다.|i-Buddy introduces social connection opportunities for eligible international participants.|i-Buddy为符合条件的国际学生提供交流机会。|i-Buddyは対象となる留学生の交流機会を紹介します。
 cultural|문화교류 행사는 학기마다 달라지며 참여 조건을 확인해야 합니다.|Cultural events vary by term; always confirm registration and eligibility.|文化交流活动每学期可能变化，请核实报名与参加条件。|文化交流イベントは学期ごとに変わり、参加条件の確認が必要です。
-exchangeFaq|교환·방문학생이 자주 묻는 학사와 생활 질문의 기본 안내 경로입니다.|Find frequently asked questions about exchange or visiting student procedures.|查阅交换及访问生有关学业与生活的常见问题。|交換・ビジティング学生の学務・生活のよくある質問を探します。
+exchangeFaq|교환 / 방문학생이 자주 묻는 학사와 생활 질문의 기본 안내 경로입니다.|Find frequently asked questions about exchange or visiting student procedures.|查阅交换及访问生有关学业与生活的常见问题。|交換・ビジティング学生の学務・生活のよくある質問を探します。
 gradChecklist|학과별 이수 학점, 전공 요건, 어학 조건 등 졸업 전 확인 항목을 정리합니다.|Prepare a graduation review covering department rules, credits and language criteria.|整理毕业前需要核查的院系规定、学分和语言要求。|学科の規則、修得単位、語学条件など卒業前の確認項目を整理します。
 department|졸업 사정과 미이수 과목 등 학과 고유 기준은 소속 학과 사무실에 확인하세요.|Your department is an important contact for degree-specific graduation questions.|涉及院系毕业审核及未修课程时，应联系所属院系办公室。|卒業判定や未修得科目など学科固有の要件は所属学科事務室に確認します。
 thesis|대학원 학위 취득에 논문, 학위시험 또는 심사가 필요한지 과정별로 확인하세요.|Graduate degree requirements may include a thesis, comprehensive exam or review.|研究生学位可能要求论文、综合考试或答辩，需按专业确认。|大学院の学位に論文、試験、審査などが必要か課程別に確認します。
@@ -46,7 +46,7 @@ intlScholarship|외국인특별전형 장학 기준은 입학 연도, 성적 및
 scholarshipChanges|장학 규정이 개정될 수 있으므로 과거 금액과 현재 적용 기준을 구분해야 합니다.|Scholarship rules may be revised. Do not treat past amounts as current entitlements.|奖学金规定可能修订，请勿把往年金额当作当前待遇。|奨学金規程は改正されます。過去の金額を現在の権利とみなさないでください。
 tuitionSupport|등록금 납부, 장학금 신청, 감면 또는 환급 절차를 유형별로 확인합니다.|Find the relevant notices for tuition payment, scholarship requests, reductions or refunds.|按项目查询学费缴纳、奖学金申请、减免及退费手续。|学費納入、奨学金申請、減免・返金の手続きを項目別に確認します。
 certificate|재학, 성적, 졸업 관련 증명서의 발급 방법과 수수료를 학교에서 확인합니다.|Check issuance channels and possible fees for enrolment, transcripts and graduation certificates.|查询在读、成绩及毕业证明的开具方式与收费。|在学・成績・卒業証明書の発行方法と手数料を確認します。
-future|외국인 유학생이 참여 가능한 진로·취업 프로그램과 상담 공지를 찾아봅니다.|Explore career guidance and job-support programs open to international students.|查找留学生可参与的职业规划、就业指导及咨询项目。|留学生が参加できる進路・就職支援プログラムと相談情報を探します。
+future|외국인 유학생이 참여 가능한 진로 / 취업 프로그램과 상담 공지를 찾아봅니다.|Explore career guidance and job-support programs open to international students.|查找留学生可参与的职业规划、就业指导及咨询项目。|留学生が参加できる進路・就職支援プログラムと相談情報を探します。
 `;
 const nextSteps = String.raw`
 undergradApply|지원 학기 모집요강의 모집단위와 원서 일정을 확인하세요.|Open the guide for your intake and check majors and deadlines.|打开对应学期招生简章并核实院系及截止日期。|志望学期の募集要項で学科と出願期限を確認してください。
@@ -70,13 +70,13 @@ syllabus|희망 강의의 수업 언어와 평가방식을 확인하세요.|Revi
 englishCourses|해당 학기 개설목록을 조회하고 수강 가능 여부를 문의하세요.|Check that term's list and confirm enrolment eligibility.|查询当期开课清单并确认是否可选。|その学期の開講一覧と履修資格を確認してください。
 credits|학과 졸업요건과 본인의 성적표를 나란히 비교하세요.|Compare the current department rules against your transcript.|对照院系毕业要求与本人成绩单。|学科の要件と自分の成績表を照合してください。
 grades|성적 이의 신청 기간과 교수님 안내를 확인하세요.|Check the grade appeal window and instructor instructions.|核对成绩异议期限及授课教师指引。|成績異議申立期間と担当教員の指示を確認してください。
-leave|신청 전 학과와 외국인학생센터에 학적·체류 영향을 확인하세요.|Before filing, check both academic and immigration consequences.|申请前向院系和留学生中心咨询学籍及签证影响。|申請前に学科と外国人学生センターへ学籍・在留への影響を確認してください。
+leave|신청 전 학과와 외국인학생센터에 학적 / 체류 영향을 확인하세요.|Before filing, check both academic and immigration consequences.|申请前向院系和留学生中心咨询学籍及签证影响。|申請前に学科と外国人学生センターへ学籍・在留への影響を確認してください。
 academicWarning|학교 공지에서 지원 자격을 확인한 뒤 학과에 상담을 요청하세요.|Check support criteria and ask your department for guidance.|核对辅导资格后向院系寻求咨询。|支援条件を確認し、学科に相談してください。
 writingClinic|WE人 또는 eCampus에서 이번 학기 모집 공고를 검색하세요.|Search WE人 or eCampus for a current writing-clinic notice.|在WE人或eCampus搜索本学期写作辅导公告。|WE人やeCampusで今学期の募集を検索してください。
 studyMentor|프로그램별 성적, 학적 및 선발 조건을 확인하세요.|Verify academic standing, student status and eligibility for each call.|核对每期项目的成绩、学籍及选拔条件。|募集ごとの成績・学籍・選考条件を確認してください。
 studyCommunity|지원 기간과 팀 구성 요건을 최신 모집 공고에서 확인하세요.|Look for the latest recruitment window and team requirements.|在最新公告中核对申请期限与组队要求。|最新募集で応募期間とチーム条件を確認してください。
 wein|포털에서 프로그램별 신청 자격과 운영 일정을 확인하세요.|Open the portal and verify each program's eligibility and dates.|进入平台逐项查看报名资格与时间。|ポータルで各プログラムの資格と日程を確認してください。
-topik|입학·장학·졸업 중 자신의 목적에 해당하는 공지를 선택하세요.|Choose the correct notice for admission, scholarship or graduation.|按入学、奖学金或毕业目的查看对应公告。|入試・奨学金・卒業の目的に合う案内を確認してください。
+topik|입학 / 장학 / 졸업 중 자신의 목적에 해당하는 공지를 선택하세요.|Choose the correct notice for admission, scholarship or graduation.|按入学、奖学金或毕业目的查看对应公告。|入試・奨学金・卒業の目的に合う案内を確認してください。
 koreanHelper|어학기관의 현재 헬퍼 모집 여부를 확인하세요.|Ask the language institute whether helper activities are running now.|向语言教育机构确认当前学伴活动是否开放。|語学機関にヘルパー募集の有無を確認してください。
 exchangeProg|본교 추천 절차와 건국대 국제처 일정을 함께 확인하세요.|Confirm nomination by your home school and OIA procedures.|同时核对本校提名程序与建国大学国际处安排。|所属大学の推薦と建国大国際交流の手続きを確認してください。
 visitingProg|방문학생 전용 비용과 서류를 교환학생 조건과 구분하세요.|Check visiting-specific fees and documents separately from exchange rules.|区分访问生和交换生的费用与所需资料。|ビジティング学生独自の費用・書類を確認してください。
@@ -92,7 +92,7 @@ gksScholarship|GKS 담당 공지와 본인 수혜 조건을 별도로 확인하�
 intlScholarship|입학년도와 이번 학기 규정의 최신 개정본을 확인하세요.|Verify the latest rule and the cohort-specific criteria.|查阅最新规定及本人入学年度适用标准。|最新規程と入学年度別の適用条件を確認してください。
 scholarshipChanges|규정의 시행일과 경과 조치를 확인한 뒤 문의하세요.|Review effective dates and transitional provisions before relying on amounts.|确认新规生效日期及过渡条款后再咨询。|施行日と経過措置を確認してから問い合わせてください。
 tuitionSupport|희망 지원제도의 공지에서 신청기간과 제출 서류를 확인하세요.|For each support scheme, check the current call's deadline and paperwork.|逐个核对资助项目的申请期限与材料。|各制度の募集案内で期限と必要書類を確認してください。
-certificate|증명서 용도와 제출 기관이 요구하는 언어·형식을 확인하세요.|Check the certificate type, language and format required by the recipient.|确认收件机构需要的证明种类、语言与格式。|提出先が求める証明書の種類・言語・形式を確認してください。
+certificate|증명서 용도와 제출 기관이 요구하는 언어 / 형식을 확인하세요.|Check the certificate type, language and format required by the recipient.|确认收件机构需要的证明种类、语言与格式。|提出先が求める証明書の種類・言語・形式を確認してください。
 future|지원 가능한 학생 유형, 모집 일정과 참가 방식을 확인하세요.|Verify participant eligibility, dates and application routes.|核对求职项目面向的学生类型、报名时间和方式。|参加資格、募集期間、申込方法を確認してください。
 `;
 function readRows(input, label){

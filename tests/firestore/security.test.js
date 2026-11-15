@@ -24,11 +24,13 @@ import { RESOURCES } from "../../src/data.js";
 const address = process.env.FIRESTORE_EMULATOR_HOST;
 // Permission-denied writes below are expected assertions, not application errors.
 setLogLevel("silent");
-if (!address || !/^(127\.0\.0\.1|localhost):\d+$/.test(address))
+if (!address || !/^(127\.0\.0\.1|localhost|\[::1\]):\d+$/.test(address))
   throw new Error(
     "Rules tests require a loopback Firestore emulator; live databases are forbidden",
   );
-const [host, port] = address.split(":");
+const endpoint = new URL(`http://${address}`);
+const host = endpoint.hostname,
+  port = endpoint.port;
 let env;
 const originalTime = Timestamp.fromDate(new Date("2026-01-01T00:00:00Z"));
 const profile = () => ({
@@ -326,7 +328,12 @@ test("only the public feature document is guest-readable and only administrators
       chatEnabled: true,
     }),
   );
-  await assertSucceeds(setDoc(doc(db("operator"),"serviceConfig/public"),{communityEnabled:true,chatEnabled:false}));
+  await assertSucceeds(
+    setDoc(doc(db("operator"), "serviceConfig/public"), {
+      communityEnabled: true,
+      chatEnabled: false,
+    }),
+  );
 });
 test("profile deletion cannot leave a misleading partially deleted account", async () => {
   await assertFails(deleteDoc(doc(db(), "users/alice")));
@@ -334,26 +341,73 @@ test("profile deletion cannot leave a misleading partially deleted account", asy
 
 test("deletion requires a fresh owner login and cannot delete another account or operator records", async () => {
   const recent = { auth_time: Math.floor(Date.now() / 1000) };
-  await assertFails(setDoc(doc(db("alice", { auth_time: 1 }), "accountDeletions/alice"), { requestedAt: serverTimestamp() }));
-  await assertFails(setDoc(doc(db("alice", recent), "accountDeletions/bob"), { requestedAt: serverTimestamp() }));
-  await assertFails(setDoc(doc(db("operator", recent), "accountDeletions/operator"), { requestedAt: serverTimestamp() }));
-  await assertFails(setDoc(doc(db("bob", recent), "accountDeletions/bob"), { requestedAt: serverTimestamp() }));
-  await assertFails(setDoc(doc(db("alice", recent), "accountDeletions/alice"), { requestedAt: serverTimestamp(), bypass: true }));
-  await assertSucceeds(setDoc(doc(db("alice", recent), "accountDeletions/alice"), { requestedAt: serverTimestamp() }));
+  await assertFails(
+    setDoc(doc(db("alice", { auth_time: 1 }), "accountDeletions/alice"), {
+      requestedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(doc(db("alice", recent), "accountDeletions/bob"), {
+      requestedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(doc(db("operator", recent), "accountDeletions/operator"), {
+      requestedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(doc(db("bob", recent), "accountDeletions/bob"), {
+      requestedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(doc(db("alice", recent), "accountDeletions/alice"), {
+      requestedAt: serverTimestamp(),
+      bypass: true,
+    }),
+  );
+  await assertSucceeds(
+    setDoc(doc(db("alice", recent), "accountDeletions/alice"), {
+      requestedAt: serverTimestamp(),
+    }),
+  );
   await assertSucceeds(deleteDoc(doc(db("alice", recent), "users/alice")));
 });
 
 test("a deletion marker cannot be removed or used to recreate profile and private records", async () => {
   const store = db("alice", { auth_time: Math.floor(Date.now() / 1000) });
-  await assertSucceeds(setDoc(doc(store, "accountDeletions/alice"), { requestedAt: serverTimestamp() }));
+  await assertSucceeds(
+    setDoc(doc(store, "accountDeletions/alice"), {
+      requestedAt: serverTimestamp(),
+    }),
+  );
   await assertSucceeds(getDoc(doc(store, "accountDeletions/alice")));
   await assertFails(getDoc(doc(db("bob"), "accountDeletions/alice")));
   await assertFails(getDocs(collection(store, "accountDeletions")));
-  await assertFails(updateDoc(doc(store, "accountDeletions/alice"), { requestedAt: serverTimestamp() }));
+  await assertFails(
+    updateDoc(doc(store, "accountDeletions/alice"), {
+      requestedAt: serverTimestamp(),
+    }),
+  );
   await assertFails(deleteDoc(doc(store, "accountDeletions/alice")));
-  await assertFails(updateDoc(doc(store, "users/alice"), { locale: "ko", updatedAt: serverTimestamp() }));
-  await assertFails(setDoc(doc(store, "users/alice/saved/visa"), { createdAt: serverTimestamp() }));
-  await assertFails(setDoc(doc(store, "users/alice/checklists/u"), { completed: [], updatedAt: serverTimestamp() }));
+  await assertFails(
+    updateDoc(doc(store, "users/alice"), {
+      locale: "ko",
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(doc(store, "users/alice/saved/visa"), {
+      createdAt: serverTimestamp(),
+    }),
+  );
+  await assertFails(
+    setDoc(doc(store, "users/alice/checklists/u"), {
+      completed: [],
+      updatedAt: serverTimestamp(),
+    }),
+  );
   await assertSucceeds(deleteDoc(doc(store, "users/alice")));
   await assertFails(setDoc(doc(store, "users/alice"), profile()));
 });

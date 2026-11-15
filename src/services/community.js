@@ -98,13 +98,13 @@ export function createCommunityService({
       d.where("status", "==", "visible"),
       d.orderBy("createdAt", direction),
       ...(cursor ? [d.startAfter(cursor)] : []),
-      d.limit(count),
+      d.limit(count + 1),
     ];
     const result = await d.getDocs(d.query(collection, ...constraints));
     return {
-      items: result.docs.map(pack),
-      cursor: result.docs.at(-1) || null,
-      hasMore: result.size === count,
+      items: result.docs.slice(0, count).map(pack),
+      cursor: result.docs.slice(0, count).at(-1) || null,
+      hasMore: result.size > count,
     };
   };
   return {
@@ -128,7 +128,7 @@ export function createCommunityService({
         error,
       ),
     listPosts: (uid, room, cursor) =>
-      queryPage(uid, room, "post", "", cursor, 20),
+      queryPage(uid, room, "post", "", cursor, 10),
     olderMessages: (uid, room, cursor) =>
       queryPage(uid, room, "message", "", cursor, 30),
     olderComments: (uid, room, parent, cursor) =>

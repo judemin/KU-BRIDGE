@@ -2457,3 +2457,334 @@ select {
     font-size: 16px;
   }
 }
+
+/* Dedicated board, editor and chat pages share the existing green palette. */
+.community-content {
+  min-width: 0;
+}
+.board-page .community-board {
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+  scroll-margin-top: 160px;
+}
+.board-page .post-list {
+  min-height: 160px;
+}
+.board-page .post-title,
+.post-detail h2 {
+  overflow-wrap: anywhere;
+}
+.board-page .post-row {
+  padding-block: 20px;
+}
+.content-author > b {
+  overflow-wrap: anywhere;
+}
+.content-author > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.country-flag {
+  font-family:
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 17px;
+  line-height: 1;
+}
+.board-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+.board-pagination button {
+  min-width: 40px;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--green);
+  background: #fff;
+  font-size: 13px;
+}
+.board-pagination button[aria-current="page"] {
+  color: #fff;
+  background: var(--green);
+  border-color: var(--green);
+}
+.board-pagination button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.board-pagination button[aria-current="page"]:disabled {
+  opacity: 1;
+}
+.page-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+}
+.post-write-page {
+  max-width: 860px;
+}
+.post-editor {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--green);
+}
+.post-editor > h2 {
+  margin: 24px 0;
+  font-size: 18px;
+}
+.post-editor .community-composer {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: #fff;
+}
+.post-editor textarea {
+  min-height: 260px;
+}
+.chat-page {
+  padding-block: 32px 48px;
+}
+.chat-page .community-heading {
+  margin-bottom: 22px;
+}
+.chat-page .community-heading h1 {
+  margin-top: 0;
+}
+.chat-page .community-content {
+  max-width: 1000px;
+  margin-inline: auto;
+}
+.chat-page .community-chat {
+  position: static;
+  width: 100%;
+  height: clamp(360px, calc(100dvh - 330px), 760px);
+  min-height: 0;
+}
+.chat-page .community-chat.collapsed {
+  height: auto;
+}
+.chat-page .chat-scroll {
+  padding-inline: 24px;
+  scrollbar-gutter: stable;
+}
+.chat-page .chat-message {
+  padding-block: 18px 12px;
+}
+.chat-page .chat-message .content-body {
+  font-size: 15px;
+  line-height: 1.75;
+}
+.chat-page .chat-heading {
+  padding: 16px 24px 0;
+}
+.chat-page .chat-room-name {
+  padding-inline: 24px;
+}
+.chat-page .chat-compose {
+  padding: 16px 24px max(16px, env(safe-area-inset-bottom));
+}
+.chat-page .chat-compose textarea {
+  min-height: 64px;
+  max-height: 160px;
+  font-size: 16px;
+}
+.chat-page .chat-compose .auth-button {
+  min-height: 46px;
+}
+.account-record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.account-panel.account-records,
+.account-panel.account-admin {
+  border-top-width: 1px;
+}
+.account-records > p,
+.account-admin p,
+.account-danger > p {
+  margin: 0;
+  font-size: 14px;
+}
+.account-admin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.account-admin > div {
+  min-width: 0;
+}
+.account-admin .auth-button {
+  flex-shrink: 0;
+}
+.account-panel.account-danger {
+  border-top-width: 1px;
+  border-color: #e5d9d7;
+  background: #fffdfc;
+}
+.account-danger > .danger-outline {
+  margin-top: 22px;
+}
+.auth-button.danger-outline {
+  color: #8e322a;
+  border-color: #cba6a2;
+  background: #fff;
+}
+.account-danger > form {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e5d9d7;
+}
+.home-account-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: #f4f8f5;
+  border: 1px solid #dde8e0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.home-account-notice p {
+  margin: 0;
+}
+.home-account-notice a {
+  flex-shrink: 0;
+}
+.account-panel .auth-button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+@media (min-width: 1181px) and (max-width: 1440px) {
+  .header-inner {
+    gap: 16px;
+  }
+  .header-nav {
+    gap: 2px;
+  }
+  .header-nav a {
+    padding-inline: 7px;
+  }
+  .language-buttons {
+    display: none;
+  }
+  .language-control select {
+    display: block;
+    width: 96px;
+  }
+}
+@media (max-width: 650px) {
+  .board-page,
+  .post-write-page {
+    padding-block: 28px 44px;
+  }
+  .community-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .community-heading h1 {
+    margin-top: 0;
+  }
+  .room-tabs {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .room-tabs button {
+    flex: 1 1 auto;
+    min-height: 42px;
+    padding-inline: 10px;
+  }
+  .board-heading {
+    align-items: flex-start;
+  }
+  .board-heading > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .board-heading h2 {
+    flex-shrink: 0;
+  }
+  .board-pagination {
+    gap: 8px;
+  }
+  .page-numbers {
+    gap: 4px;
+  }
+  .board-pagination button {
+    min-width: 36px;
+    padding-inline: 9px;
+  }
+  .post-editor {
+    padding: 20px 16px;
+  }
+  .post-editor textarea {
+    min-height: 220px;
+    font-size: 16px;
+  }
+  .chat-page {
+    padding-block: 24px 32px;
+  }
+  .chat-page .community-chat {
+    height: clamp(320px, calc(100dvh - 340px), 640px);
+  }
+  .chat-page .community-chat.collapsed {
+    height: auto;
+  }
+  .chat-page .chat-heading {
+    padding-inline: 16px;
+  }
+  .chat-page .chat-scroll {
+    padding-inline: 16px;
+  }
+  .chat-page .chat-room-name {
+    padding-inline: 16px;
+  }
+  .chat-page .chat-compose {
+    padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+  }
+  .account-admin {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+  .account-record-actions {
+    align-items: stretch;
+  }
+  .account-record-actions .auth-button {
+    flex: 1 1 180px;
+  }
+  .account-panel {
+    padding: 22px 20px;
+  }
+  .home-account-notice {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+@media (max-width: 1180px) {
+  .header-nav {
+    max-height: calc(100dvh - 148px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
