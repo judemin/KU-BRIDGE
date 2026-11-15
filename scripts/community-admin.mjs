@@ -17,7 +17,7 @@ const root = `projects/${project}/databases/(default)/documents`;
 let client;
 if (action === "restore-emulator") {
   const host = process.env.FIRESTORE_EMULATOR_HOST;
-  if (!/^(127\.0\.0\.1|localhost):\d+$/.test(host || "") || !file)
+  if (!/^(127\.0\.0\.1|localhost|\[::1\]):\d+$/.test(host || "") || !file)
     throw Error(
       "Restore requires a loopback FIRESTORE_EMULATOR_HOST and a backup file; production restore is forbidden",
     );

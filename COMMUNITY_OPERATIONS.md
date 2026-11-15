@@ -33,7 +33,7 @@ node scripts/community-admin.mjs open ku-bridge
 node scripts/community-admin.mjs backup ku-bridge
 ```
 
-`bootstrap`은 인증된 운영자와 다섯 방을 준비하며 기존 공개 스위치를 보존합니다. `open`은 베타 검증 후 사용합니다. `backup`은 Git에서 제외된 `.private-backups/`에 논리 백업을 저장합니다. 개인정보가 있으므로 공개 저장소·빌드·채팅에 첨부하지 않습니다. Auth 비밀번호는 포함하지 않으며 동시 변경에 대한 시점 일관성은 보장하지 않습니다. 중요한 작업 전에는 커뮤니티를 중지하고 백업을 별도 비공개 보관합니다.
+`bootstrap`은 인증된 운영자와 다섯 방을 준비하며 기존 공개 스위치를 보존합니다. `open`은 배포·자동 검증 후 베타 확인을 위해 사용합니다. 정식 출시는 실기기·참여자 검증 후 결정합니다. `backup`은 Git에서 제외된 `.private-backups/`에 논리 백업을 저장합니다. 개인정보가 있으므로 공개 저장소·빌드·채팅에 첨부하지 않습니다. Auth 비밀번호는 포함하지 않으며 동시 변경에 대한 시점 일관성은 보장하지 않습니다. 중요한 작업 전에는 커뮤니티를 중지하고 백업을 별도 비공개 보관합니다.
 
 복구는 **로컬 demo 에뮬레이터만 허용**하며 복원 필드를 다시 읽어 대조합니다. 운영 DB 덮어쓰기는 지원하지 않습니다. 실제 복구 때는 삭제 표식·은퇴 ID·후속 변경을 검토해 선택 복구해야 합니다. 과거 백업 전체를 덮으면 탈퇴 데이터가 되살아날 수 있습니다.
 
@@ -42,6 +42,16 @@ node scripts/community-admin.mjs backup ku-bridge
 npm run emulators
 # 터미널 2: 실제 백업 파일명을 사용
 $env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:15808'
+node scripts/community-admin.mjs restore-emulator ku-bridge .private-backups/BACKUP_FILE.json
+```
+
+Windows에서 IPv4 에뮬레이터가 `EFAULT`로 시작되지 않으면 로컬 IPv6 실행을 사용할 수 있습니다. 이번 백업 8개 문서의 복원·필드 대조는 다음 경로로 통과했습니다. 이 명령은 Auth와 분리된 복구 확인용이며 브라우저 앱의 기본 에뮬레이터 주소를 바꾸지 않습니다.
+
+```powershell
+# 터미널 1
+java -jar .cache/firebase/emulators/cloud-firestore-emulator-v1.22.0.jar --host ::1 --port 5184 --project_id demo-ku-bridge --single_project_mode --single_project_mode_error --rules firebase/firestore.rules
+# 터미널 2
+$env:FIRESTORE_EMULATOR_HOST = '[::1]:5184'
 node scripts/community-admin.mjs restore-emulator ku-bridge .private-backups/BACKUP_FILE.json
 ```
 
